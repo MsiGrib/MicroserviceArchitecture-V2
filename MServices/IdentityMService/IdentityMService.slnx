@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BLL/BLL.csproj" Id="1d2555e0-2417-4a0f-a7c5-f88d47d35dba" />
+  <Project Path="Common/Common.csproj" Id="79f39c6d-079c-4201-8088-61a07723b982" />
+  <Project Path="DAL/DAL.csproj" Id="13601afc-32c2-4182-9121-81e4cf4a7d42" />
+  <Project Path="IdentityMService/IdentityMService.csproj" />
+</Solution>

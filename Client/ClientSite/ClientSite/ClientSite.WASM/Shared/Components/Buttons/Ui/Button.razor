@@ -1,0 +1,13 @@
+﻿@using ClientSite.WASM.Shared.Components.Texts.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+
+@inherits BaseComponent
+
+<button @onclick="OnClick" @attributes="CleanedAttributes"
+        class="@AdditionalClass cursor-pointer rounded-xl transition-colors duration-150">
+
+    <SimpleText Type="@SimpleTextType">
+        @ChildContent
+    </SimpleText>
+
+</button>

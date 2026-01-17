@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ClientSite/ClientSite.WASM/ClientSite.WASM.csproj" />
+  <Project Path="ClientSite/ClientSite.SSR/ClientSite.SSR.csproj" />
+</Solution>

@@ -1,0 +1,26 @@
+﻿@using ClientSite.WASM.App.NavPanels.Ui
+@using ClientSite.WASM.Shared.Components.Loaders.Lib
+@using ClientSite.WASM.Shared.Components.Loaders.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+
+@inherits LayoutComponentBase
+
+<div class="w-full h-full">
+
+    @if (_isLoaded)
+    {
+        <NavBar />
+
+        <div>
+            @Body
+        </div>
+    }
+    else
+    {
+        <Loader Type="LoaderType.Spinner"
+                Size="LoaderSize.Large"
+                Color="border-blue-600"
+                BackgroundColor="text-gray-100" />
+    }
+
+</div>

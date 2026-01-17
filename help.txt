@@ -1,0 +1,27 @@
+Запуск докера
+docker-compose up -d
+
+Остановка докера
+docker-compose down
+
+Остановка докера с удалением
+docker-compose down -v
+
+Перезагрузка докера
+docker-compose restart
+
+
+pgAdmin
+Email: admin@admin.com
+Password: admin
+
+бд
+Host: localhost
+Port: 5432
+Database: microservices
+Username: admin
+Password: Admin123!
+
+миграции
+Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject IdentityMService
+Update-Database -Context AppDbContext -Project DAL -StartupProject IdentityMService

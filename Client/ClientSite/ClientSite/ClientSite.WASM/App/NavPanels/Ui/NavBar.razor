@@ -1,0 +1,47 @@
+﻿@using ClientSite.WASM.Shared.Components.Buttons.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+
+<nav class="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+
+            <div class="flex items-center space-x-2 cursor-pointer">
+
+                <Button SimpleTextType="@SimpleTextType.Button2"
+                        OnClick="@NavigateToHome"
+                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-150 shadow-sm">
+                    Home
+                </Button>
+
+            </div>
+
+            <div class="flex items-center space-x-4">
+
+                @if (!_isAuthenticated)
+                {
+                    <Button SimpleTextType="@SimpleTextType.Button2"
+                            OnClick="@NavigateToLogin"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-150 shadow-sm">
+                        Sign In
+                    </Button>
+
+                    <Button SimpleTextType="@SimpleTextType.Button2"
+                            OnClick="@NavigateToRegister"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-150 shadow-sm">
+                        Sign Up
+                    </Button>
+                }
+                else
+                {
+                    <Button SimpleTextType="@SimpleTextType.Button2"
+                            OnClick="@LogOut"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-150 shadow-sm">
+                        Log Out
+                    </Button>
+                }
+
+            </div>
+
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.12",
+    "@tailwindcss/forms": "^0.5.10",
+    "tailwindcss": "^4.1.12"
+  },
+  "scripts": {
+    "tw": "npx @tailwindcss/cli -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/app.css",
+    "tw-watch": "npx @tailwindcss/cli -i ./wwwroot/css/tailwind.css -o ./wwwroot/css/app.css --watch"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "preline": "^3.2.3",
+    "sortablejs": "^1.15.6",
+    "vanilla-calendar-pro": "^3.0.5"
+  }
+}
