@@ -27,11 +27,6 @@ services:
       - "5432:5432"
     networks:
       - microservices-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # pgAdmin для управления PostgreSQL
   pgadmin:
@@ -64,10 +59,32 @@ services:
     networks:
       - microservices-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "RedisPass123!", "--raw", "incr", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # UI для Redis - Redis Commander (исправленная конфигурация)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis_commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:RedisPass123!  # Указываем пароль в строке подключения
+      # ИЛИ используйте отдельные переменные:
+      # - REDIS_HOST=redis
+      # - REDIS_PORT=6379
+      # - REDIS_PASSWORD=RedisPass123!
+      # - REDIS_DB=0
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=admin123
+    ports:
+      - "8081:8081"
+    networks:
+      - microservices-network
+    depends_on:
+      redis:
+        condition: service_healthy  # Ждем, пока Redis не станет здоровым
 
   # Kafka + Zookeeper
   zookeeper:
@@ -81,6 +98,11 @@ services:
       - zookeeper_data:/var/lib/zookeeper/data
     networks:
       - microservices-network
+    healthcheck:
+      test: ["CMD", "zkServer.sh", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -98,6 +120,10 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Добавьте эти настройки:
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      # Форсировать использование нового кластера если ID не совпадает
+      KAFKA_CLUSTER_ID: "g2K7PErSQImDSpk__oON8A"  # ID из логов
     ports:
       - "9092:9092"
       - "29092:29092"
@@ -105,6 +131,12 @@ services:
       - kafka_data:/var/lib/kafka/data
     networks:
       - microservices-network
+    # Добавьте healthcheck
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # UI для Kafka - Kafdrop
   kafka-ui:

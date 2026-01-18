@@ -36,7 +36,5 @@ namespace DAL.Entities
 
         [Column("LastLoginAt")]
         public DateTime? LastLoginAt { get; set; }
-
-        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

@@ -6,7 +6,6 @@ namespace DAL
     public class AppDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -27,26 +26,6 @@ namespace DAL
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("NOW()");
-
-                entity.HasMany(u => u.RefreshTokens)
-                    .WithOne(rt => rt.User)
-                    .HasForeignKey(rt => rt.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            modelBuilder.Entity<RefreshToken>(entity =>
-            {
-                entity.HasKey(rt => rt.Id);
-                entity.HasIndex(e => e.Token).IsUnique();
-                entity.HasIndex(e => e.UserId);
-
-                entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("NOW()");
-
-                entity.HasOne(rt => rt.User)
-                    .WithMany(u => u.RefreshTokens)
-                    .HasForeignKey(rt => rt.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             return modelBuilder;

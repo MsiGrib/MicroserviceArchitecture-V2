@@ -48,7 +48,8 @@ namespace BLL.Services.Auth
                 Username = request.Username,
                 PasswordHash = _passwordHasher.HashPassword(request.Password),
                 CreatedAt = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                LastLoginAt = DateTime.UtcNow,
             };
 
             await _userRepository.AddAsync(user);
@@ -73,7 +74,6 @@ namespace BLL.Services.Auth
                 throw new Exception("Invalid login credentials");
 
             user.LastLoginAt = DateTime.UtcNow;
-            user.UpdatedAt = DateTime.UtcNow;
 
             _userRepository.Update(user);
             await _userRepository.SaveChangesAsync();

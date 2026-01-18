@@ -103,6 +103,32 @@ namespace IdentityMService
                 });
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("ApiGateway", policy =>
+                {
+                    policy.WithOrigins(
+                            "https://localhost:7010",
+                            "http://localhost:5010",
+                            "https://localhost:5010",
+                            "http://localhost:7010"
+                        )
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
             builder.Services.AddControllers();
             builder.Services.AddHttpContextAccessor();
 
@@ -131,6 +157,8 @@ namespace IdentityMService
                 c.RoutePrefix = "swagger";
                 c.DisplayRequestDuration();
             });
+
+            app.UseCors("ApiGateway");
 
             app.UseMiddleware<ExceptionMiddleware>();
             app.UseHttpsRedirection();
