@@ -12,7 +12,7 @@ volumes:
   pgadmin_data:
 
 services:
-  # PostgreSQL 16 с pgAdmin
+  # PostgreSQL 16
   postgres:
     image: postgres:16-alpine
     container_name: postgres_db
@@ -21,14 +21,15 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: Admin123!
       POSTGRES_DB: microservices
+      POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - microservices-network
 
-  # pgAdmin для управления PostgreSQL
+  # pgAdmin
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
@@ -46,7 +47,7 @@ services:
     depends_on:
       - postgres
 
-  # Redis для кэша и токенов
+  # Redis
   redis:
     image: redis:7.2-alpine
     container_name: redis_cache
@@ -64,18 +65,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # UI для Redis - Redis Commander (исправленная конфигурация)
+  # UI для Redis
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis_commander
     restart: unless-stopped
     environment:
-      - REDIS_HOSTS=local:redis:6379:0:RedisPass123!  # Указываем пароль в строке подключения
-      # ИЛИ используйте отдельные переменные:
-      # - REDIS_HOST=redis
-      # - REDIS_PORT=6379
-      # - REDIS_PASSWORD=RedisPass123!
-      # - REDIS_DB=0
+      - REDIS_HOSTS=local:redis:6379:0:RedisPass123! 
       - HTTP_USER=admin
       - HTTP_PASSWORD=admin123
     ports:
@@ -84,7 +80,7 @@ services:
       - microservices-network
     depends_on:
       redis:
-        condition: service_healthy  # Ждем, пока Redis не станет здоровым
+        condition: service_healthy 
 
   # Kafka + Zookeeper
   zookeeper:
@@ -120,10 +116,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      # Добавьте эти настройки:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
-      # Форсировать использование нового кластера если ID не совпадает
-      KAFKA_CLUSTER_ID: "g2K7PErSQImDSpk__oON8A"  # ID из логов
+      KAFKA_CLUSTER_ID: "g2K7PErSQImDSpk__oON8A"
     ports:
       - "9092:9092"
       - "29092:29092"
@@ -131,7 +125,6 @@ services:
       - kafka_data:/var/lib/kafka/data
     networks:
       - microservices-network
-    # Добавьте healthcheck
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
       interval: 30s

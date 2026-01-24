@@ -3,14 +3,12 @@ using BLL.DTOs.Auth.Responses;
 using BLL.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace IdentityMService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
@@ -100,26 +98,6 @@ namespace IdentityMService.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-        }
-
-        [HttpGet("me")]
-        [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetCurrentUser()
-        {
-            var userClaims = User.Claims.Select(c => new { c.Type, c.Value });
-            return Ok(userClaims);
-        }
-
-        private Guid GetUserIdFromClaims()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                           ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-                throw new UnauthorizedAccessException("Invalid user ID in token");
-
-            return userId;
         }
     }
 }

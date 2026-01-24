@@ -29,9 +29,9 @@ namespace ClientSite.WASM.App.NavPanels.Ui
             Navigation.NavigateTo("/login");
         }
 
-        private void NavigateToRegister()
+        private async Task NavigateToRegister()
         {
-            Navigation.NavigateTo("/register");
+            Navigation.NavigateTo("/SignUp");
         }
 
         private void LogOut()

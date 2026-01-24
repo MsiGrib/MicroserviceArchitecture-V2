@@ -1,0 +1,52 @@
+﻿@using ClientSite.WASM.Shared.Components.Buttons.Ui
+@using ClientSite.WASM.Shared.Components.Inputs
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+@using ClientSite.WASM.Shared.Components.Texts.Ui
+
+<div>
+
+    <div class="w-full">
+        <SimpleText Type="SimpleTextType.H3"
+                    class="text-center">
+            Регистрация
+        </SimpleText>
+    </div>
+
+    <div class="mt-8 flex w-full flex-col items-center justify-center">
+
+        <SimpleText Type="SimpleTextType.H5"
+                    class="">
+            Имя
+        </SimpleText>
+
+        <BaseInput SimpleTextType="@SimpleTextType.H5" Placeholder="Имя"
+                    ValueChanged="@UsernameHandler"
+                    class="w-[50%] rounded-2xl border border-blue-600 p-2"/>
+
+        <SimpleText Type="SimpleTextType.H5"
+                    class="mt-4">
+            Почта
+        </SimpleText>
+
+        <BaseInput SimpleTextType="@SimpleTextType.H5" Placeholder="Почта"
+                   ValueChanged="@EmailHandler"
+                   class="w-[50%] rounded-2xl border border-blue-600 p-2" />
+
+        <SimpleText Type="SimpleTextType.H5"
+                    class="mt-4">
+            Пароль
+        </SimpleText>
+
+        <BaseInput SimpleTextType="@SimpleTextType.H5" Placeholder="Пароль" Type="password"
+                   ValueChanged="@PasswordHandler"
+                   class="w-[50%] rounded-2xl border border-blue-600 p-2" />
+
+        <Button SimpleTextType="@SimpleTextType.Button2"
+                OnClick="@OnSignUpClick"
+                class="mt-8 h-14 w-[50%] rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-sm transition-colors duration-150 hover:bg-blue-700">
+            Зарегестрироваться
+        </Button>
+
+    </div>
+
+</div>

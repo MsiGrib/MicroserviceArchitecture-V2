@@ -2,7 +2,6 @@
 using BLL.DTOs.Auth.Responses;
 using BLL.Services.Interfaces.Auth;
 using Common.Models;
-using DAL.Entities;
 using DAL.Repositories.Interfaces.User;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -41,7 +40,7 @@ namespace BLL.Services.Auth
             if (await _userRepository.ExistsByUsernameAsync(request.Username))
                 throw new Exception("Username already exists");
 
-            var user = new User
+            var user = new DAL.Entities.User
             {
                 Id = Guid.NewGuid(),
                 Email = request.Email,
@@ -145,7 +144,7 @@ namespace BLL.Services.Auth
             _logger.LogInformation("User logged out: {UserId}", userId);
         }
 
-        private async Task<AuthResponse> GenerateTokensAsync(User user)
+        private async Task<AuthResponse> GenerateTokensAsync(DAL.Entities.User user)
         {
             var accessToken = GenerateAccessToken(user);
             var refreshToken = GenerateRefreshToken();
@@ -169,7 +168,7 @@ namespace BLL.Services.Auth
             };
         }
 
-        private string GenerateAccessToken(User user)
+        private string GenerateAccessToken(DAL.Entities.User user)
         {
             var jwtSettings = _jwtSettings.Value;
 

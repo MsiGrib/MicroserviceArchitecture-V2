@@ -1,4 +1,7 @@
 <Solution>
-  <Project Path="ClientSite/ClientSite.WASM/ClientSite.WASM.csproj" />
+  <Folder Name="/Intergrations/">
+    <Project Path="Api/Api.csproj" Id="a0d3fbf2-f337-4ca7-a88b-7e3b25fc4cde" />
+  </Folder>
   <Project Path="ClientSite/ClientSite.SSR/ClientSite.SSR.csproj" />
+  <Project Path="ClientSite/ClientSite.WASM/ClientSite.WASM.csproj" />
 </Solution>

@@ -1,5 +1,7 @@
 ﻿using BLL.Services.Auth;
 using BLL.Services.Interfaces.Auth;
+using BLL.Services.Interfaces.User;
+using BLL.Services.User;
 using Common.Models;
 using DAL;
 using DAL.Repositories.Interfaces.User;
@@ -67,20 +69,9 @@ namespace IdentityMService
                         Encoding.UTF8.GetBytes(appSettings.Jwt.Key)),
                     ClockSkew = TimeSpan.Zero
                 };
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        var accessToken = context.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(accessToken))
-                        {
-                            context.Token = accessToken;
-                        }
-                        return Task.CompletedTask;
-                    }
-                };
+                options.SaveToken = true;
             });
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -105,22 +96,19 @@ namespace IdentityMService
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("ApiGateway", policy =>
+                options.AddPolicy("AllowGateway", policy =>
                 {
                     policy.WithOrigins(
-                            "https://localhost:7010",
-                            "http://localhost:5010",
-                            "https://localhost:5010",
-                            "http://localhost:7010"
-                        )
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
+                        "https://localhost:7010", // API Gateway HTTPS
+                        "http://localhost:5010",   // API Gateway HTTP
+                        "https://localhost:7162",  // Blazor клиент
+                        "http://localhost:5030"    // Blazor клиент
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
                 });
-            });
 
-            builder.Services.AddCors(options =>
-            {
                 options.AddPolicy("AllowAll", policy =>
                 {
                     policy.AllowAnyOrigin()
@@ -137,7 +125,10 @@ namespace IdentityMService
             #region Additionally
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
             #endregion
@@ -158,9 +149,9 @@ namespace IdentityMService
                 c.DisplayRequestDuration();
             });
 
-            app.UseCors("ApiGateway");
+            app.UseCors("AllowGateway");
+            app.UseMiddleware<GatewayAuthMiddleware>();
 
-            app.UseMiddleware<ExceptionMiddleware>();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

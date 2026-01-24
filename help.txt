@@ -6,6 +6,7 @@ docker-compose down
 
 Остановка докера с удалением
 docker-compose down -v
+docker-compose down -v kafka
 
 Перезагрузка докера
 docker-compose restart
@@ -19,10 +20,12 @@ Email: admin@admin.com
 Password: admin
 
 бд
-Host: localhost
+Name: PostgreSQL Docker
+Host: postgres
 Port: 5432
 Username: admin
 Password: Admin123!
+"Postgres": "Host=localhost;Port=5433;Database=IdentityDB;Username=admin;Password=Admin123!;Pooling=true;"
 
 миграции
 Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject IdentityMService

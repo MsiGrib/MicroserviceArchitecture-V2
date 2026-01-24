@@ -1,0 +1,6 @@
+﻿@inherits BaseComponent
+
+<input @attributes="@CleanedAttributes"
+       @oninput="@OnInputChanged" @onkeydown="@OnKeyDown"
+       value="@Value" placeholder="@Placeholder" readonly="@ReadOnly" type="@Type"
+       class="@_baseClass @AdditionalClass placeholder:@_baseClass placeholder:text-zinc-500 focus:ring-0 focus:outline-none" />

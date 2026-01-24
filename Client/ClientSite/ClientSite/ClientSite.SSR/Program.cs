@@ -1,3 +1,4 @@
+using Api;
 using ClientSite.SSR.Components;
 
 namespace ClientSite.SSR
@@ -15,6 +16,8 @@ namespace ClientSite.SSR
             builder.Services
                 .AddRazorComponents()
                 .AddInteractiveWebAssemblyComponents();
+
+            builder.Services.AddMicroservicesIntegrationApi(builder.Configuration);
 
             #endregion
 
