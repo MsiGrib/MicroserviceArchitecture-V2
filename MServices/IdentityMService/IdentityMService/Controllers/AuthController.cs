@@ -78,7 +78,7 @@ namespace IdentityMService.Controllers
             var userId = GetUserIdFromClaims();
             await _authService.RevokeTokenAsync(request.RefreshToken, userId);
 
-            return Ok(new { message = "Logged out successfully" });
+            return Ok();
         }
 
         [HttpPost("change-password")]

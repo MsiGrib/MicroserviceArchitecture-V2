@@ -1,5 +1,6 @@
 using Api;
 using ClientSite.SSR.Components;
+using ClientSite.WASM.Shared.Storages.Lib;
 
 namespace ClientSite.SSR
 {
@@ -18,6 +19,13 @@ namespace ClientSite.SSR
                 .AddInteractiveWebAssemblyComponents();
 
             builder.Services.AddMicroservicesIntegrationApi(builder.Configuration);
+
+            #endregion
+
+            #region Additionally
+
+            builder.Services.AddScoped<StorageService>();
+            builder.Services.AddScoped<ClientStorage>();
 
             #endregion
 

@@ -15,14 +15,12 @@ namespace IdentityMService.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Логирование для отладки
             Console.WriteLine($"GatewayAuthMiddleware: Path = {context.Request.Path}");
 
-            // Проверяем путь БЕЗ префикса /api/auth
             bool isPublicEndpoint =
-                context.Request.Path.StartsWithSegments("/login") ||
-                context.Request.Path.StartsWithSegments("/register") ||
-                context.Request.Path.StartsWithSegments("/refresh");
+                context.Request.Path.StartsWithSegments("auth/login") ||
+                context.Request.Path.StartsWithSegments("auth/register") ||
+                context.Request.Path.StartsWithSegments("auth/refresh");
 
             Console.WriteLine($"IsPublicEndpoint: {isPublicEndpoint}");
 
@@ -82,11 +80,9 @@ namespace IdentityMService.Middleware
             }
             else
             {
-                // Проверяем путь БЕЗ префикса
                 bool isProtectedEndpoint =
-                    context.Request.Path.StartsWithSegments("/logout") ||
-                    context.Request.Path.StartsWithSegments("/change-password") ||
-                    context.Request.Path.StartsWithSegments("/user");
+                    context.Request.Path.StartsWithSegments("auth/logout") ||
+                    context.Request.Path.StartsWithSegments("auth/change-password");
 
                 Console.WriteLine($"IsProtectedEndpoint: {isProtectedEndpoint}");
 

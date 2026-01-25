@@ -1,34 +1,58 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace ClientSite.WASM.App.Layouts.Ui
 {
     public partial class MainLayout
     {
+        #region Injects
+
+        [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+        #endregion
+
+        #region UI Fields
+
         private bool _isLoaded = false;
-        private bool _isClientSide = false;
+        private bool _isClient = false;
 
-        protected override async Task OnInitializedAsync()
+        #endregion
+
+        #region LC Methods
+
+        protected override void OnInitialized()
         {
-            await base.OnInitializedAsync();
+            base.OnInitialized();
 
-            CheckPlatform();
-            await ConfirmClientLoadAsync();
+            _isClient = OperatingSystem.IsBrowser();
+
+            if (!_isClient)
+            {
+                _isLoaded = true;
+            }
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
-        }
 
-        private void CheckPlatform()
-            => _isClientSide = RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser"));
-
-        private async Task ConfirmClientLoadAsync()
-        {
-            if (_isClientSide)
+            if (firstRender && _isClient)
             {
-                _isLoaded = true;
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("eval", "console.log('Layout loaded on client')");
+
+                    _isLoaded = true;
+                    StateHasChanged();
+                }
+                catch
+                {
+                    _isLoaded = true;
+                    StateHasChanged();
+                }
             }
         }
+
+        #endregion
     }
 }

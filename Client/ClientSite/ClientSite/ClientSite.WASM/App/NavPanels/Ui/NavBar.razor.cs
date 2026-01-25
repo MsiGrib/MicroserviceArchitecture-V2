@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Api.Interfaces;
+using ClientSite.WASM.App.NavPanels.Api;
+using ClientSite.WASM.Shared.Storages.Lib;
+using Microsoft.AspNetCore.Components;
 
 namespace ClientSite.WASM.App.NavPanels.Ui
 {
@@ -6,14 +9,38 @@ namespace ClientSite.WASM.App.NavPanels.Ui
     {
         #region Injects
 
+        [Inject] private IMicroservicesClient MicroservicesClient { get; init; } = default!;
         [Inject] private NavigationManager Navigation { get; init; } = default!;
+        [Inject] private ClientStorage ClientStorage { get; init; } = default!;
 
         #endregion
 
         #region UI Fields
 
+        private NavBarApi? _api = null;
         private bool _isAuthenticated = false;
-        private string _userName = string.Empty;
+
+        #endregion
+
+        #region LC Methods
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            _api = new NavBarApi(MicroservicesClient);
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+
+            var clientSettings = await ClientStorage.GetClientSettingsAsync();
+
+            _isAuthenticated = clientSettings != null &&
+                !string.IsNullOrWhiteSpace(clientSettings.AccessToken) && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken);
+            StateHasChanged();
+        }
 
         #endregion
 
@@ -26,7 +53,7 @@ namespace ClientSite.WASM.App.NavPanels.Ui
 
         private void NavigateToLogin()
         {
-            Navigation.NavigateTo("/login");
+            Navigation.NavigateTo("/SignIn");
         }
 
         private async Task NavigateToRegister()
@@ -34,9 +61,22 @@ namespace ClientSite.WASM.App.NavPanels.Ui
             Navigation.NavigateTo("/SignUp");
         }
 
-        private void LogOut()
+        private async Task LogOut()
         {
+            try
+            {
+                var clientSettings = await ClientStorage.GetClientSettingsAsync();
+                if (clientSettings != null && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken))
+                    await _api!.LogOut(clientSettings.RefreshToken);
 
+                await ClientStorage.ClearClientSettingsAsync();
+                Navigation.NavigateTo("/");
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         #endregion
