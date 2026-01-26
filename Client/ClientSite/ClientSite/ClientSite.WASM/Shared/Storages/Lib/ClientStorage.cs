@@ -2,7 +2,7 @@
 
 namespace ClientSite.WASM.Shared.Storages.Lib
 {
-    public class ClientStorage(StorageService _storage)
+    public class ClientStorage(StorageService _storage) : IClientStorage
     {
         #region Private Fields
 
@@ -11,7 +11,7 @@ namespace ClientSite.WASM.Shared.Storages.Lib
 
         #endregion
 
-        #region Public methods
+        #region IClientStorage implementation
 
         public async Task SetClientSettingsAsync(ClientSettings value)
             => await _storage.Set(ClientSettingsKey, value);

@@ -1,4 +1,5 @@
 using Api;
+using ClientSite.WASM.Shared.Services;
 using ClientSite.WASM.Shared.Storages.Lib;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -21,7 +22,10 @@ namespace ClientSite.WASM
             #region Additionally
 
             builder.Services.AddScoped<StorageService>();
-            builder.Services.AddScoped<ClientStorage>();
+            builder.Services.AddScoped<IClientStorage, ClientStorage>();
+            builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
+            builder.Services.AddScoped<IAuthStateService, AuthStateService>();
+            builder.Services.AddScoped<IAuthenticatedApiService, AuthenticatedApiService>();
 
             #endregion
 

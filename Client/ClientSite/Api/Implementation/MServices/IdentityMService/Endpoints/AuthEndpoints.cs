@@ -38,13 +38,13 @@ namespace Api.Implementation.MServices.IdentityMService.Endpoints
             return ExecuteAsync<AuthResponse>(restRequest, ctn: cancellationToken);
         }
 
-        public Task LogOut(RefreshTokenRequest request, CancellationToken cancellationToken = default)
+        public Task LogOut(RefreshTokenRequest request, string token, CancellationToken cancellationToken = default)
         {
             var restRequest = new RestRequest(BuildUrl("/logout"), Method.Post);
 
             restRequest.AddJsonBody(request);
 
-            return ExecuteAsync(restRequest, ctn: cancellationToken);
+            return ExecuteAsync(restRequest, token, ctn: cancellationToken);
         }
     }
 }

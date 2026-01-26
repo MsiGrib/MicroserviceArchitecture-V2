@@ -13,34 +13,7 @@ namespace Api.Implementation.MServices.IdentityMService.Endpoints
         public Task<UserDTO> GetProfile(string token, CancellationToken cancellationToken = default)
         {
             var restRequest = new RestRequest(BuildUrl("/me"), Method.Get);
-            return ExecuteAsync<UserDTO>(restRequest, token, cancellationToken);
+            return ExecuteAsync<UserDTO>(restRequest, token, ctn: cancellationToken);
         }
-
-        //public Task<UserProfileResponse> UpdateProfile(
-        //    UpdateProfileRequest request,
-        //    string token,
-        //    CancellationToken cancellationToken = default)
-        //{
-        //    var restRequest = new RestRequest(BuildUrl("/profile"), Method.Put);
-        //    restRequest.AddJsonBody(request);
-        //    return ExecuteAsync<UserProfileResponse>(restRequest, token, cancellationToken);
-        //}
-
-        //public Task<List<UserResponse>> GetUsers(
-        //    GetUsersRequest request,
-        //    string token,
-        //    CancellationToken cancellationToken = default)
-        //{
-        //    var restRequest = new RestRequest(BuildUrl(""), Method.Get);
-
-        //    if (request.Page.HasValue)
-        //        restRequest.AddQueryParameter("page", request.Page.Value.ToString());
-        //    if (request.PageSize.HasValue)
-        //        restRequest.AddQueryParameter("pageSize", request.PageSize.Value.ToString());
-        //    if (!string.IsNullOrEmpty(request.Search))
-        //        restRequest.AddQueryParameter("search", request.Search);
-
-        //    return ExecuteAsync<List<UserResponse>>(restRequest, token, cancellationToken);
-        //}
     }
 }

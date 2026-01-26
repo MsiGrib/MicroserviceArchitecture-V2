@@ -1,17 +1,20 @@
 ﻿using Api.Interfaces;
 using ClientSite.WASM.App.NavPanels.Api;
+using ClientSite.WASM.Shared.Services;
 using ClientSite.WASM.Shared.Storages.Lib;
 using Microsoft.AspNetCore.Components;
 
 namespace ClientSite.WASM.App.NavPanels.Ui
 {
-    public partial class NavBar
+    public partial class NavBar : IDisposable
     {
         #region Injects
 
         [Inject] private IMicroservicesClient MicroservicesClient { get; init; } = default!;
+        [Inject] private IClientStorage ClientStorage { get; init; } = default!;
+        [Inject] private IAuthStateService AuthStateService { get; init; } = default!;
+        [Inject] private IAuthenticatedApiService AuthenticatedApiService { get; init; } = default!;
         [Inject] private NavigationManager Navigation { get; init; } = default!;
-        [Inject] private ClientStorage ClientStorage { get; init; } = default!;
 
         #endregion
 
@@ -19,6 +22,9 @@ namespace ClientSite.WASM.App.NavPanels.Ui
 
         private NavBarApi? _api = null;
         private bool _isAuthenticated = false;
+        private bool _isInitialized = false;
+        private bool _disposed = false;
+        private CancellationTokenSource? _cts;
 
         #endregion
 
@@ -29,37 +35,60 @@ namespace ClientSite.WASM.App.NavPanels.Ui
             base.OnInitialized();
 
             _api = new NavBarApi(MicroservicesClient);
+            _cts = new CancellationTokenSource();
+
+            AuthStateService.OnAuthStateChanged += HandleAuthStateChanged;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
 
-            var clientSettings = await ClientStorage.GetClientSettingsAsync();
+            if (firstRender && !_disposed)
+            {
+                await CheckAuthState();
+                _isInitialized = true;
 
-            _isAuthenticated = clientSettings != null &&
-                !string.IsNullOrWhiteSpace(clientSettings.AccessToken) && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken);
-            StateHasChanged();
+                StateHasChanged();
+            }
         }
 
         #endregion
 
         #region Private methods
 
-        private void NavigateToHome()
+        private async void HandleAuthStateChanged()
         {
-            Navigation.NavigateTo("/");
+            if (_disposed || _cts?.IsCancellationRequested == true) return;
+
+            await InvokeAsync(async () =>
+            {
+                await CheckAuthState();
+                StateHasChanged();
+            });
         }
+
+        private async Task CheckAuthState()
+        {
+            try
+            {
+                _isAuthenticated = await AuthStateService.CheckAuthenticationAsync();
+            }
+            catch
+            {
+                _isAuthenticated = false;
+            }
+        }
+
+
+        private void NavigateToHome()
+            => Navigation.NavigateTo("/");
 
         private void NavigateToLogin()
-        {
-            Navigation.NavigateTo("/SignIn");
-        }
+            => Navigation.NavigateTo("/SignIn");
 
         private async Task NavigateToRegister()
-        {
-            Navigation.NavigateTo("/SignUp");
-        }
+            => Navigation.NavigateTo("/SignUp");
 
         private async Task LogOut()
         {
@@ -67,15 +96,33 @@ namespace ClientSite.WASM.App.NavPanels.Ui
             {
                 var clientSettings = await ClientStorage.GetClientSettingsAsync();
                 if (clientSettings != null && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken))
-                    await _api!.LogOut(clientSettings.RefreshToken);
-
-                await ClientStorage.ClearClientSettingsAsync();
-                Navigation.NavigateTo("/");
+                {
+                    await AuthenticatedApiService.ExecuteWithTokenRefreshAsync(async token =>
+                    {
+                        await _api!.LogOut(clientSettings.RefreshToken, token);
+                    });
+                }
             }
-            catch (Exception ex)
-            {
+            catch (UnauthorizedAccessException) { }
+            catch { }
 
-                throw;
+            await AuthStateService.LogoutAsync();
+            Navigation.NavigateTo("/");
+        }
+
+        #endregion
+
+        #region Public methods
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _cts?.Cancel();
+                _cts?.Dispose();
+
+                AuthStateService.OnAuthStateChanged -= HandleAuthStateChanged;
             }
         }
 

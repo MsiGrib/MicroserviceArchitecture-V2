@@ -18,9 +18,9 @@ namespace IdentityMService.Middleware
             Console.WriteLine($"GatewayAuthMiddleware: Path = {context.Request.Path}");
 
             bool isPublicEndpoint =
-                context.Request.Path.StartsWithSegments("auth/login") ||
-                context.Request.Path.StartsWithSegments("auth/register") ||
-                context.Request.Path.StartsWithSegments("auth/refresh");
+                context.Request.Path.StartsWithSegments("/login") ||
+                context.Request.Path.StartsWithSegments("/register") ||
+                context.Request.Path.StartsWithSegments("/refresh");
 
             Console.WriteLine($"IsPublicEndpoint: {isPublicEndpoint}");
 
@@ -81,8 +81,8 @@ namespace IdentityMService.Middleware
             else
             {
                 bool isProtectedEndpoint =
-                    context.Request.Path.StartsWithSegments("auth/logout") ||
-                    context.Request.Path.StartsWithSegments("auth/change-password");
+                    context.Request.Path.StartsWithSegments("/logout") ||
+                    context.Request.Path.StartsWithSegments("/change-password");
 
                 Console.WriteLine($"IsProtectedEndpoint: {isProtectedEndpoint}");
 

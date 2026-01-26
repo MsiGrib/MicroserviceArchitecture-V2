@@ -43,9 +43,9 @@ namespace ApiGateway
             app.UseAuthorization();
             app.MapHealthChecks("/health");
             app.MapControllers();
-            app.UseMiddleware<UnauthorizedMiddleware>();
-            app.MapReverseProxy();
             app.UseMiddleware<ExceptionHandlingMiddleware>();
+            app.MapReverseProxy();
+            app.UseMiddleware<UnauthorizedMiddleware>();
 
             #endregion
 

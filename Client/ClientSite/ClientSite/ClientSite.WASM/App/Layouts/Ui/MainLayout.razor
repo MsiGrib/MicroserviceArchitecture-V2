@@ -1,16 +1,17 @@
 ﻿@using ClientSite.WASM.App.NavPanels.Ui
 @using ClientSite.WASM.Shared.Components.Loaders.Lib
 @using ClientSite.WASM.Shared.Components.Loaders.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
 
 @inherits LayoutComponentBase
 
-<div class="w-full h-full">
+<div class="h-full w-full">
 
     @if (_isLoaded)
     {
         <NavBar />
 
-        <div class="main-content">
+        <div>
             @Body
         </div>
     }

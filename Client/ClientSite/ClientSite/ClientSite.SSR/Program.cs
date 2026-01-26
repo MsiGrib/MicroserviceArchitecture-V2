@@ -1,5 +1,6 @@
 using Api;
 using ClientSite.SSR.Components;
+using ClientSite.WASM.Shared.Services;
 using ClientSite.WASM.Shared.Storages.Lib;
 
 namespace ClientSite.SSR
@@ -24,8 +25,11 @@ namespace ClientSite.SSR
 
             #region Additionally
 
-            builder.Services.AddScoped<StorageService>();
-            builder.Services.AddScoped<ClientStorage>();
+            builder.Services.AddScoped<StorageService>(sp => new StorageService(null));
+            builder.Services.AddScoped<IClientStorage, ServerClientStorage>();
+            builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
+            builder.Services.AddScoped<IAuthStateService, AuthStateService>();
+            builder.Services.AddScoped<IAuthenticatedApiService, AuthenticatedApiService>();
 
             #endregion
 

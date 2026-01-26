@@ -1,16 +1,30 @@
 ﻿using ClientSite.WASM.Shared.Storages.Model;
 using Microsoft.JSInterop;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace ClientSite.WASM.Shared.Storages.Lib
 {
-    public class StorageService(IJSRuntime _js)
+    public class StorageService
     {
+        #region Private Fields
+
+        private readonly IJSRuntime? _jsRuntime;
+        private bool _isBrowser;
+
+        #endregion
+
+        public StorageService(IJSRuntime? jsRuntime = null)
+        {
+            _jsRuntime = jsRuntime;
+            _isBrowser = jsRuntime != null;
+        }
+
         #region Public methods
 
         public async Task Set<T>(string key, T value)
         {
+            if (!_isBrowser || _jsRuntime == null) return;
+
             var item = new StoredValue<T>
             {
                 Value = value,
@@ -18,21 +32,19 @@ namespace ClientSite.WASM.Shared.Storages.Lib
             };
 
             var json = JsonSerializer.Serialize(item);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-                await _js.InvokeVoidAsync("localStorage.setItem", key, json);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, json);
         }
 
         public async Task<T?> Get<T>(string key, int minutesToLive)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-                return default;
-
-            var json = await _js.InvokeAsync<string>("localStorage.getItem", key);
-            if (string.IsNullOrWhiteSpace(json))
-                return default;
+            if (!_isBrowser || _jsRuntime == null) return default;
 
             try
             {
+                var json = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+                if (string.IsNullOrWhiteSpace(json))
+                    return default;
+
                 var item = JsonSerializer.Deserialize<StoredValue<T>>(json);
                 if (item == null)
                     return default;
@@ -48,21 +60,20 @@ namespace ClientSite.WASM.Shared.Storages.Lib
             }
             catch
             {
-                await Remove(key);
                 return default;
             }
         }
 
         public async Task Remove(string key)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-                await _js.InvokeVoidAsync("localStorage.removeItem", key);
+            if (!_isBrowser || _jsRuntime == null) return;
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
         }
 
         public async Task Clear()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
-                await _js.InvokeVoidAsync("localStorage.clear");
+            if (!_isBrowser || _jsRuntime == null) return;
+            await _jsRuntime.InvokeVoidAsync("localStorage.clear");
         }
 
         #endregion

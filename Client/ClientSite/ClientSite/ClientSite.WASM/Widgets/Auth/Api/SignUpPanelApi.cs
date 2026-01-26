@@ -15,7 +15,7 @@ namespace ClientSite.WASM.Widgets.Auth.Api
                 Password = password
             };
 
-            return await _client.Identity.Auth.Register(request);
+            return await _client.Identity.Auth.Register(request, cancellationToken);
         }
     }
 }
