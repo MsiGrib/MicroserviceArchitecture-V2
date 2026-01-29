@@ -30,7 +30,10 @@ namespace Api.Implementation.MServices.IdentityMService
                     if (!_configuration.Services.TryGetValue("Identity", out var serviceConfig))
                         throw new ArgumentException("Identity service not found in configuration");
 
-                    _authEndpoints = new AuthEndpoints(_client, serviceConfig.AuthBasePath);
+                    if (!serviceConfig.Controllers.TryGetValue("Auth", out var controllerConfig))
+                        throw new ArgumentException("Auth controller not found in Identity service configuration");
+
+                    _authEndpoints = new AuthEndpoints(_client, controllerConfig.BasePath);
                 }
 
                 return _authEndpoints;
@@ -46,7 +49,10 @@ namespace Api.Implementation.MServices.IdentityMService
                     if (!_configuration.Services.TryGetValue("Identity", out var serviceConfig))
                         throw new ArgumentException("Identity service not found in configuration");
 
-                    _userEndpoints = new UserEndpoints(_client, serviceConfig.UserBasePath);
+                    if (!serviceConfig.Controllers.TryGetValue("User", out var controllerConfig))
+                        throw new ArgumentException("User controller not found in Identity service configuration");
+
+                    _userEndpoints = new UserEndpoints(_client, controllerConfig.BasePath);
                 }
 
                 return _userEndpoints;

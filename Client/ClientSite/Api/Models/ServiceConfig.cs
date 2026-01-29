@@ -2,7 +2,8 @@
 {
     public record ServiceConfig
     {
-        public string AuthBasePath { get; init; } = "/api/auth";
-        public string UserBasePath { get; init; } = "/api/user";
+        public string Name { get; init; } = string.Empty;
+        public string Description { get; init; } = string.Empty;
+        public Dictionary<string, ControllerConfig> Controllers { get; init; } = new();
     }
 }

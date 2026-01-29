@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.User.Responses;
+﻿using BLL.DTOs.User.DTO;
 using BLL.Services.Auth;
 using BLL.Services.Interfaces.User;
 using DAL.Repositories.Interfaces.User;

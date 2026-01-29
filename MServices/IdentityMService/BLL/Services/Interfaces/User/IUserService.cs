@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.User.Responses;
+﻿using BLL.DTOs.User.DTO;
 
 namespace BLL.Services.Interfaces.User
 {

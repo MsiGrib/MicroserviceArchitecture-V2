@@ -1,4 +1,4 @@
-﻿namespace BLL.DTOs.User.Responses
+﻿namespace BLL.DTOs.User.DTO
 {
     public record UserDTO
     {

@@ -8,28 +8,28 @@ namespace DAL.Entities
     {
         [Key]
         [Column("Id")]
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
 
         [Required]
         [Column("Email")]
         [MaxLength(255)]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; init; } = string.Empty;
 
         [Required]
         [Column("UserName")]
         [MaxLength(100)]
-        public string Username { get; set; } = string.Empty;
+        public string Username { get; init; } = string.Empty;
 
         [Required]
         [Column("PasswordHash")]
         public string PasswordHash { get; set; } = string.Empty;
 
         [Column("IsActive")]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; init; } = true;
 
         [Column("CreatedAt")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; init; }
 
         [Column("UpdatedAt")]
         public DateTime? UpdatedAt { get; set; }

@@ -17,7 +17,7 @@ HTTP_PASSWORD: "admin123"
 
 pgAdmin
 Email: admin@admin.com
-Password: admin
+Password: Admin123!
 
 бд
 Name: PostgreSQL Docker
@@ -30,3 +30,6 @@ Password: Admin123!
 миграции
 Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject IdentityMService
 Update-Database -Context AppDbContext -Project DAL -StartupProject IdentityMService
+
+Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject ContentMService
+Update-Database -Context AppDbContext -Project DAL -StartupProject ContentMService

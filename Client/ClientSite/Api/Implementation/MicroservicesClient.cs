@@ -1,5 +1,7 @@
-﻿using Api.Implementation.MServices.IdentityMService;
+﻿using Api.Implementation.MServices.ContentMService;
+using Api.Implementation.MServices.IdentityMService;
 using Api.Interfaces;
+using Api.Interfaces.MServices.ContentMService;
 using Api.Interfaces.MServices.IdentityMService;
 using Api.Models;
 using Microsoft.Extensions.Options;
@@ -12,6 +14,7 @@ namespace Api.Implementation
         private readonly IHttpClientFactory _httpClientFactory;
 
         private IIdentityMService? _identityService;
+        private IContentMService? _contentService;
 
         public MicroservicesClient(IOptions<Configuration> configuration, IHttpClientFactory httpClientFactory)
         {
@@ -24,5 +27,8 @@ namespace Api.Implementation
 
         public IIdentityMService Identity =>
             _identityService ??= new IdentityMService(this, _configuration);
+
+        public IContentMService Content =>
+            _contentService ??= new ContentMService(this, _configuration);
     }
 }

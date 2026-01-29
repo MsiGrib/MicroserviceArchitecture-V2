@@ -9,6 +9,8 @@ namespace ApiGateway.Services
         private static readonly Dictionary<string, string[]> PublicEndpoints = new()
         {
             ["auth"] = new[] { "POST /login", "POST /register", "POST /refresh", },
+            ["post"] = new[] { "GET /" },
+            ["comment"] = new[] { "GET /post/{postId}" },
         };
         private static readonly List<string> IdentityServicePaths = new()
         {
@@ -24,7 +26,6 @@ namespace ApiGateway.Services
         public bool IsIdentityServiceEndpoint(HttpContext context)
         {
             var path = context.Request.Path.ToString();
-
             return IdentityServicePaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -42,13 +43,30 @@ namespace ApiGateway.Services
             }
             else
             {
-                HandleOtherServices(context, proxyRequest);
+                await HandleContentServiceEndpoint(context, proxyRequest);
             }
 
-            if (user?.Identity?.IsAuthenticated == true)
-                await AddUserHeadersAsync(context, proxyRequest);
-
             await Task.CompletedTask;
+        }
+
+        private async Task HandleContentServiceEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
+        {
+            proxyRequest.Headers.Remove("Authorization");
+
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+                var isValid = await _jwtService.ValidateTokenAsync(token);
+
+                if (isValid)
+                {
+                    var claimsPrincipal = await _jwtService.GetPrincipalFromTokenAsync(token);
+                    if (claimsPrincipal != null)
+                        await AddUserHeadersAsync(claimsPrincipal, proxyRequest);
+                }
+            }
         }
 
         private void HandlePublicAuthEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
@@ -65,15 +83,8 @@ namespace ApiGateway.Services
                 proxyRequest.Headers.TryAddWithoutValidation("Authorization", authHeader);
         }
 
-        private void HandleOtherServices(HttpContext context, HttpRequestMessage proxyRequest)
+        private async Task AddUserHeadersAsync(ClaimsPrincipal user, HttpRequestMessage proxyRequest)
         {
-            proxyRequest.Headers.Remove("Authorization");
-        }
-
-        private async Task AddUserHeadersAsync(HttpContext context, HttpRequestMessage proxyRequest)
-        {
-            var user = context.User;
-
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
 
