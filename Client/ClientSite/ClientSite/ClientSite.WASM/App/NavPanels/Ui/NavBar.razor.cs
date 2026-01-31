@@ -24,7 +24,7 @@ namespace ClientSite.WASM.App.NavPanels.Ui
         private bool _isAuthenticated = false;
         private bool _isInitialized = false;
         private bool _disposed = false;
-        private CancellationTokenSource? _cts;
+        private CancellationTokenSource? _cts = null;
 
         #endregion
 
@@ -87,8 +87,11 @@ namespace ClientSite.WASM.App.NavPanels.Ui
         private void NavigateToLogin()
             => Navigation.NavigateTo("/SignIn");
 
-        private async Task NavigateToRegister()
+        private void NavigateToRegister()
             => Navigation.NavigateTo("/SignUp");
+
+        private void NavigateToPosts()
+            => Navigation.NavigateTo("/Posts");
 
         private async Task LogOut()
         {

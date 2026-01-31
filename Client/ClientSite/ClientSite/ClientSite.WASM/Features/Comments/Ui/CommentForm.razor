@@ -1,0 +1,16 @@
+﻿@using ClientSite.WASM.Features.Comments.Api
+
+<div class="mt-4">
+    <textarea @bind="@_newCommentText"
+              placeholder="Добавить комментарий..."
+              class="w-full rounded-lg border p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+    </textarea>
+
+    <div class="mt-2 flex justify-end">
+        <button @onclick="@AddComment"
+                disabled="@string.IsNullOrWhiteSpace(_newCommentText)"
+                class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300">
+            Отправить
+        </button>
+    </div>
+</div>

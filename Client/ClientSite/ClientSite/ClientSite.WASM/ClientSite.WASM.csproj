@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Shared\Api\" />
+    <Folder Include="Features\Comments\Models\" />
+    <Folder Include="Features\Posts\Models\" />
   </ItemGroup>
 
 </Project>

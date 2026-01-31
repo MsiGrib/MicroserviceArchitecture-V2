@@ -1,0 +1,41 @@
+﻿@using ClientSite.WASM.Features.Comments.Ui
+@using ClientSite.WASM.Features.Reactions.Ui
+
+<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
+
+    <h3 class="mb-2 text-xl font-semibold text-gray-800">@Post.Title</h3>
+    
+    <div class="mb-4 text-gray-600">
+        @Post.Content
+    </div>
+    
+    <div class="mb-4 flex items-center justify-between text-sm text-gray-500">
+        <div>
+            <span>Автор: @Post.UserId.ToString()[..8]...</span>
+            <span class="mx-2">•</span>
+            <span>@Post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+        </div>
+    </div>
+    
+    <div class="border-t pt-3">
+        <ReactionButton 
+            PostId="@Post.Id"
+            Reactions="@Post.Reactions.ToList()"
+            OnReactionAdded="HandleReactionAdded"
+            OnReactionRemoved="HandleReactionRemoved" />
+    </div>
+    
+    <div class="mt-3 border-t pt-4">
+        <h4 class="mb-3 font-medium text-gray-700">Комментарии (@Post.Comments.Count)</h4>
+        
+        <CommentList 
+            PostId="@Post.Id"
+            Comments="@Post.Comments.ToList()"
+            OnCommentAdded="HandleCommentAdded"
+            OnCommentDeleted="HandleCommentDeleted" />
+        
+        <CommentForm 
+            PostId="@Post.Id"
+            OnCommentAdded="HandleCommentAdded" />
+    </div>
+</div>

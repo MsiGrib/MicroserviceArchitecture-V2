@@ -98,10 +98,10 @@ namespace ContentMService.Middleware
         {
             var publicPatterns = new List<(string Method, string PathPattern)>
             {
-                ("GET", "/api/posts"),
-                ("GET", @"/api/posts/[0-9a-fA-F-]{36}"), // GET /api/posts/{id}
-                ("GET", @"/api/comments/post/[0-9a-fA-F-]{36}"), // GET /api/comments/post/{postId}
-                ("GET", @"/api/reactions/post/[0-9a-fA-F-]{36}"), // GET /api/reactions/post/{postId}
+                ("GET", "/api/post"),
+                ("GET", @"/api/post/[0-9a-fA-F-]{36}"), // GET /api/posts/{id}
+                ("GET", @"/api/comment/post/[0-9a-fA-F-]{36}"), // GET /api/comments/post/{postId}
+                ("GET", @"/api/reaction/post/[0-9a-fA-F-]{36}"), // GET /api/reactions/post/{postId}
             };
 
             foreach (var pattern in publicPatterns)

@@ -1,0 +1,36 @@
+﻿<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
+    <h3 class="mb-4 text-xl font-semibold">Создать новый пост</h3>
+
+    <div class="space-y-4">
+        <div>
+            <label class="mb-1 block text-sm font-medium text-gray-700">
+                Заголовок
+            </label>
+            <input type="text" @bind="@NewPost.Title"
+                   class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
+                   placeholder="Введите заголовок..." />
+        </div>
+
+        <div>
+            <label class="mb-1 block text-sm font-medium text-gray-700">
+                Содержимое
+            </label>
+            <textarea @bind="@NewPost.Content"
+                      rows="4"
+                      class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
+                      placeholder="Введите содержимое поста..."></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <button @onclick="@Cancel"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50">
+                Отмена
+            </button>
+            <button @onclick="@CreatePost"
+                    disabled="@(!CanCreatePost)"
+                    class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300">
+                Опубликовать
+            </button>
+        </div>
+    </div>
+</div>
