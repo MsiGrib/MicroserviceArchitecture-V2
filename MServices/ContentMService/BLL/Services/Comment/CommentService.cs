@@ -1,7 +1,8 @@
 ﻿using BLL.DTOs.Comment.DTO;
 using BLL.DTOs.Comment.Requests;
+using BLL.Integrations.IdentityMService.DTOs;
+using BLL.Integrations.IdentityMService.Interfaces;
 using BLL.Services.Interfaces.Comment;
-using DAL.Entities;
 using DAL.Repositories.Interfaces.Comment;
 using DAL.Repositories.Interfaces.Post;
 
@@ -11,11 +12,13 @@ namespace BLL.Services.Comment
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IPostRepository _postRepository;
+        private readonly IIdentityServiceIntegration _identityService;
 
-        public CommentService(ICommentRepository commentRepository, IPostRepository postRepository)
+        public CommentService(ICommentRepository commentRepository, IPostRepository postRepository, IIdentityServiceIntegration identityService)
         {
             _commentRepository = commentRepository;
             _postRepository = postRepository;
+            _identityService = identityService;
         }
 
         public async Task<Guid> CreateCommentAsync(CreateCommentRequest request, Guid userId)
@@ -38,15 +41,24 @@ namespace BLL.Services.Comment
             return comment.Id;
         }
 
-        public async Task<IEnumerable<CommentDTO>> GetCommentsByPostIdAsync(Guid postId)
+        public async Task<IEnumerable<CommentDTO>?> GetCommentsByPostIdAsync(Guid postId)
         {
             var comments = await _commentRepository.GetByPostIdAsync(postId);
+
+            var usersInfo = await _identityService.GetUsersSmallInfoAsync(comments.Select(x => x.UserId).ToList());
+
+            if (usersInfo == null || usersInfo.Count == 0) return null;
 
             return comments.Select(x => new CommentDTO
             {
                 Id = x.Id,
                 Text = x.Text,
-                UserId = x.UserId,
+                UserInfo = new UserSmallInfoDTO
+                {
+                    Id = usersInfo.First(y => x.UserId == y.Id).Id,
+                    Email = usersInfo.First(y => x.UserId == y.Id).Email,
+                    Username = usersInfo.First(y => x.UserId == y.Id).Username,
+                },
                 PostId = x.PostId,
             });
         }

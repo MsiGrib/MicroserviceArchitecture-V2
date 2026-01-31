@@ -11,11 +11,11 @@ namespace Api.Implementation.MServices.ContentMService.Endpoints
         public PostEndpoints(IMicroservicesClient client, string basePath)
             : base(client, "Content", basePath) { }
 
-        public Task<PostDTO> GetPost(Guid id, CancellationToken cancellationToken = default)
+        public Task<PostDTO?> GetPost(Guid id, CancellationToken cancellationToken = default)
         {
             var restRequest = new RestRequest(BuildUrl($"/{id}"), Method.Get);
 
-            return ExecuteAsync<PostDTO>(restRequest, ctn: cancellationToken);
+            return ExecuteAsync<PostDTO?>(restRequest, ctn: cancellationToken);
         }
 
         public Task<List<PostDTO>?> GetAllPosts(CancellationToken cancellationToken = default)
@@ -34,13 +34,13 @@ namespace Api.Implementation.MServices.ContentMService.Endpoints
             return ExecuteAsync<Guid>(restRequest, token, ctn: cancellationToken);
         }
 
-        public Task<PostDTO> UpdatePost(Guid id, UpdatePostRequest request, string token, CancellationToken cancellationToken = default)
+        public Task<PostDTO?> UpdatePost(Guid id, UpdatePostRequest request, string token, CancellationToken cancellationToken = default)
         {
             var restRequest = new RestRequest(BuildUrl($"/{id}"), Method.Put);
 
             restRequest.AddJsonBody(request);
 
-            return ExecuteAsync<PostDTO>(restRequest, token, ctn: cancellationToken);
+            return ExecuteAsync<PostDTO?>(restRequest, token, ctn: cancellationToken);
         }
 
         public Task DeletePost(Guid id, string token, CancellationToken cancellationToken = default)

@@ -17,11 +17,11 @@
                     <div class="flex-1">
                         <p class="text-sm text-gray-800">@comment.Text</p>
                         <p class="mt-1 text-xs text-gray-500">
-                            User ID: @comment.UserId.ToString()
+                            User Email: @comment.UserInfo.Email
                         </p>
                     </div>
 
-                    @if (IsCurrentUser(comment.UserId))
+                    @if (IsCurrentUser(comment.UserInfo.Id))
                     {
                         <Button SimpleTextType="@SimpleTextType.Button2"
                                 OnClick="() => OnDeleteCommentClick(comment.Id)"

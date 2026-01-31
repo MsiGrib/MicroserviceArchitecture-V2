@@ -28,6 +28,13 @@ namespace DAL.Repositories.User
             return await query.FirstOrDefaultAsync(u => u.Id == id);
         }
 
+        public async Task<List<Entities.User>?> GetByIdsAsync(List<Guid> ids)
+        {
+            var query = _context.Users.AsQueryable();
+
+            return await query.Where(x => ids.Contains(x.Id)).ToListAsync();
+        }
+
         public async Task<bool> ExistsByEmailAsync(string email)
             => await _context.Users.AnyAsync(u => u.Email == email);
 

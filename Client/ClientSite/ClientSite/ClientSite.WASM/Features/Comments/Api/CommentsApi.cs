@@ -12,7 +12,7 @@ namespace ClientSite.WASM.Features.Comments.Api
                     token => _client.Content.Comment.CreateComment(request, token, cancellationToken)
                 );
 
-        public Task<Guid> DeleteComment(Guid id, CancellationToken cancellationToken = default)
+        public Task DeleteComment(Guid id, CancellationToken cancellationToken = default)
             => _authenticatedApiService.ExecuteWithTokenRefreshAsync(
                     token => _client.Content.Comment.DeleteComment(id, token, cancellationToken)
                 );

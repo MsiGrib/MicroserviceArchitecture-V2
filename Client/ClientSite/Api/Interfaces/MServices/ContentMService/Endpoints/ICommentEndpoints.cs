@@ -7,6 +7,6 @@ namespace Api.Interfaces.MServices.ContentMService.Endpoints
     {
         public Task<List<CommentDTO>?> GetCommentsByPost(Guid postId, CancellationToken cancellationToken = default);
         public Task<Guid> CreateComment(CreateCommentRequest request, string token, CancellationToken cancellationToken = default);
-        public Task<Guid> DeleteComment(Guid id, string token, CancellationToken cancellationToken = default);
+        public Task DeleteComment(Guid id, string token, CancellationToken cancellationToken = default);
     }
 }

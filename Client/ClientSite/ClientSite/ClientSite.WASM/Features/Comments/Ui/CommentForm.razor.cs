@@ -1,6 +1,7 @@
 ﻿using Api.Interfaces;
 using Api.Models.MServices.ContentMService.Endpoints.CommentEndpoints.Requests;
 using Api.Models.MServices.ContentMService.Endpoints.CommentEndpoints.Responses;
+using Api.Models.MServices.IdentityMService.Endpoints.UserEndpoints.Responses;
 using ClientSite.WASM.Features.Comments.Api;
 using ClientSite.WASM.Shared.Services;
 using ClientSite.WASM.Shared.Storages.Lib;
@@ -75,7 +76,12 @@ namespace ClientSite.WASM.Features.Comments.Ui
                     Id = commentId,
                     Text = _newCommentText,
                     PostId = PostId,
-                    UserId = _clientSettings.UserId,
+                    UserInfo = new UserSmallInfoDTO
+                    {
+                        Id = _clientSettings.UserId,
+                        Email = _clientSettings.Email,
+                        Username = _clientSettings.Username,
+                    }
                 };
 
                 _newCommentText = string.Empty;

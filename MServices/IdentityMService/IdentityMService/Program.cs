@@ -150,6 +150,8 @@ namespace IdentityMService
             });
 
             app.UseCors("AllowGateway");
+
+            app.UseMiddleware<ServiceIpWhitelistMiddleware>();
             app.UseMiddleware<GatewayAuthMiddleware>();
 
             app.UseHttpsRedirection();

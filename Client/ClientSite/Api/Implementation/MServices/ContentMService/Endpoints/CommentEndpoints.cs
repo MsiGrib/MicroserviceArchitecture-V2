@@ -27,11 +27,11 @@ namespace Api.Implementation.MServices.ContentMService.Endpoints
             return ExecuteAsync<Guid>(restRequest, token, ctn: cancellationToken);
         }
 
-        public Task<Guid> DeleteComment(Guid id, string token, CancellationToken cancellationToken = default)
+        public Task DeleteComment(Guid id, string token, CancellationToken cancellationToken = default)
         {
             var restRequest = new RestRequest(BuildUrl($"/{id}"), Method.Delete);
 
-            return ExecuteAsync<Guid>(restRequest, token, ctn: cancellationToken);
+            return ExecuteAsync(restRequest, token, ctn: cancellationToken);
         }
     }
 }

@@ -1,3 +1,6 @@
+using BLL.Integrations;
+using BLL.Integrations.IdentityMService.Interfaces;
+using BLL.Integrations.IdentityMService.Services;
 using BLL.Services.Comment;
 using BLL.Services.Interfaces.Comment;
 using BLL.Services.Interfaces.Post;
@@ -15,6 +18,7 @@ using DAL.Repositories.Post;
 using DAL.Repositories.Reaction;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.OpenApi;
 
 namespace ContentMService
@@ -28,6 +32,8 @@ namespace ContentMService
             #region Builder
 
             #region Main
+
+            builder.Services.AddHttpClient();
 
             builder.Configuration
                 .SetBasePath(builder.Environment.ContentRootPath)
@@ -104,9 +110,26 @@ namespace ContentMService
 
             builder.Services.AddHttpContextAccessor();
 
+            builder.Services.AddMemoryCache();
+
             #endregion
 
             #region Additionally
+
+            builder.Services.AddHttpClient("IdentityService", client =>
+            {
+                client.BaseAddress = new Uri(builder.Configuration["Integration:IdentityService:BaseUrl"]
+                    ?? "https://localhost:5001");
+                client.Timeout = TimeSpan.FromSeconds(
+                    builder.Configuration.GetValue<int>("Integration:IdentityService:TimeoutSeconds", 30));
+            })
+            .AddHttpMessageHandler(provider =>
+                new IntegrationAuthHandler(
+                    provider.GetRequiredService<IMemoryCache>(),
+                    provider.GetRequiredService<IConfiguration>())
+                );
+
+            builder.Services.AddScoped<IIdentityServiceIntegration, IdentityServiceIntegration>();
 
             builder.Services.AddScoped<IPostRepository, PostRepository>();
             builder.Services.AddScoped<ICommentRepository, CommentRepository>();
