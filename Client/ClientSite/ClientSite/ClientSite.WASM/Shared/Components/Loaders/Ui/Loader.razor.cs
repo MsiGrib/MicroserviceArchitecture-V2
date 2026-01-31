@@ -20,7 +20,7 @@ namespace ClientSite.WASM.Shared.Components.Loaders.Ui
 
         #endregion
 
-        #region Protected methods
+        #region Public methods
 
         protected string GetSizeClass()
             => Size switch

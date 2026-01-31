@@ -14,8 +14,4 @@
     <PackageReference Include="System.Text.Json" Version="10.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\MServices\IdentityMService\Endpoints\UserEndpoints\Requests\" />
-  </ItemGroup>
-
 </Project>

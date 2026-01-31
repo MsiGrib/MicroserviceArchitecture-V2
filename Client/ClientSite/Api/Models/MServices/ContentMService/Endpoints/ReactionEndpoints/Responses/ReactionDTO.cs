@@ -3,7 +3,7 @@
     public record ReactionDTO
     {
         public Guid Id { get; init; }
-        public int Type { get; init; } = 0;
+        public int Type { get; init; } = 1;
         public Guid UserId { get; init; }
         public Guid PostId { get; init; }
     }

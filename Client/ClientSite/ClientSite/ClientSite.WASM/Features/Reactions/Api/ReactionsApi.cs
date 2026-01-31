@@ -5,10 +5,10 @@ using ClientSite.WASM.Shared.Services;
 
 namespace ClientSite.WASM.Features.Reactions.Api
 {
-    public class ReactionsApi(IMicroservicesClient client, IAuthenticatedApiService authenticatedApiService)
+    public class ReactionsApi(IMicroservicesClient _client, IAuthenticatedApiService _authenticatedApiService)
     {
-        private readonly IMicroservicesClient _client = client;
-        private readonly IAuthenticatedApiService _authenticatedApiService = authenticatedApiService;
+        public async Task<List<ReactionDTO>> GetReactionsByPost(Guid postId, CancellationToken cancellationToken = default)
+            => (await _client.Content.Reaction.GetReactionsByPost(postId, cancellationToken)) ?? new List<ReactionDTO>();
 
         public Task<ReactionDTO> AddOrUpdateReaction(AddReactionRequest request, CancellationToken cancellationToken = default)
             => _authenticatedApiService.ExecuteWithTokenRefreshAsync(

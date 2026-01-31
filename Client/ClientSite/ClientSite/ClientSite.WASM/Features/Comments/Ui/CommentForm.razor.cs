@@ -11,16 +11,30 @@ namespace ClientSite.WASM.Features.Comments.Ui
 {
     public partial class CommentForm
     {
+        #region Params 
+
         [Parameter] public Guid PostId { get; set; }
         [Parameter] public EventCallback<CommentDTO> OnCommentAdded { get; set; }
+
+        #endregion
+
+        #region Injects
 
         [Inject] private IClientStorage ClientStorage { get; init; } = default!;
         [Inject] private IAuthenticatedApiService AuthenticatedApiService { get; init; } = default!;
         [Inject] private IMicroservicesClient MicroservicesClient { get; init; } = default!;
 
+        #endregion
+
+        #region UI Fields
+
         private CommentsApi? _api = null;
         private ClientSettings? _clientSettings = null;
         private string _newCommentText = string.Empty;
+
+        #endregion
+
+        #region LC Methods
 
         protected override async Task OnInitializedAsync()
         {
@@ -29,7 +43,14 @@ namespace ClientSite.WASM.Features.Comments.Ui
             _api = new CommentsApi(MicroservicesClient, AuthenticatedApiService);
         }
 
-        private async Task AddComment()
+        #endregion
+
+        #region Private methods
+
+        private void OnContentHandler(string content)
+            => _newCommentText = content;
+
+        private async Task OnAddCommentClick()
         {
             if (string.IsNullOrWhiteSpace(_newCommentText))
                 return;
@@ -47,7 +68,7 @@ namespace ClientSite.WASM.Features.Comments.Ui
                     Text = _newCommentText
                 };
 
-                var commentId = await _api.CreateComment(request);
+                var commentId = await _api!.CreateComment(request);
 
                 var newComment = new CommentDTO
                 {
@@ -58,12 +79,16 @@ namespace ClientSite.WASM.Features.Comments.Ui
                 };
 
                 _newCommentText = string.Empty;
-                await OnCommentAdded.InvokeAsync(newComment);
+
+                if (OnCommentAdded.HasDelegate)
+                    await OnCommentAdded.InvokeAsync(newComment);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при добавлении комментария: {ex.Message}");
             }
         }
+
+        #endregion
     }
 }

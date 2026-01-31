@@ -100,8 +100,7 @@ namespace ContentMService
                 options.DefaultAuthenticateScheme = "Gateway";
                 options.DefaultChallengeScheme = "Gateway";
             })
-            .AddScheme<AuthenticationSchemeOptions, GatewayAuthenticationHandler>(
-                "Gateway", options => { });
+            .AddScheme<AuthenticationSchemeOptions, GatewayAuthenticationHandler>("Gateway", options => { });
 
             builder.Services.AddHttpContextAccessor();
 
@@ -135,7 +134,7 @@ namespace ContentMService
                 c.DisplayRequestDuration();
             });
 
-            app.UseCors("AllowAll");
+            app.UseCors("AllowGateway");
 
             app.UseMiddleware<GatewayAuthMiddleware>();
 

@@ -1,34 +1,45 @@
 ﻿@using ClientSite.WASM.Features.Comments.Api
+@using ClientSite.WASM.Shared.Components.Buttons.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+@using ClientSite.WASM.Shared.Components.Texts.Ui
 @using ClientSite.WASM.Shared.Services
 @using ClientSite.WASM.Shared.Storages.Model
 
 <div class="mt-4 space-y-3">
+
     @if (_comments.Any())
     {
         @foreach (var comment in _comments)
         {
             <div class="rounded-lg bg-gray-50 p-3">
                 <div class="flex items-start justify-between">
+
                     <div class="flex-1">
                         <p class="text-sm text-gray-800">@comment.Text</p>
                         <p class="mt-1 text-xs text-gray-500">
-                            User ID: @comment.UserId.ToString()[..8]...
+                            User ID: @comment.UserId.ToString()
                         </p>
                     </div>
 
                     @if (IsCurrentUser(comment.UserId))
                     {
-                        <button @onclick="() => DeleteComment(comment.Id)"
-                                class="text-red-500 hover:text-red-700 text-sm">
+                        <Button SimpleTextType="@SimpleTextType.Button2"
+                                OnClick="() => OnDeleteCommentClick(comment.Id)"
+                                class="rounded-xl bg-red-500 px-6 py-2.5 text-white shadow-sm transition-colors duration-150 hover:bg-red-700">
                             Удалить
-                        </button>
+                        </Button>
                     }
+
                 </div>
             </div>
         }
     }
     else
     {
-        <p class="text-sm text-gray-500">Нет комментариев</p>
+        <SimpleText Type="SimpleTextType.Minimal1"
+                    class="mb-3 text-gray-500">
+            Нет комментариев
+        </SimpleText>
     }
+
 </div>

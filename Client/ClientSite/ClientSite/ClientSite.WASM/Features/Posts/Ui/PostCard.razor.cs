@@ -7,8 +7,14 @@ namespace ClientSite.WASM.Features.Posts.Ui
 {
     public partial class PostCard
     {
+        #region Params
+
         [Parameter] public PostDTO Post { get; set; } = default!;
         [Parameter] public EventCallback<PostDTO> OnPostUpdated { get; set; }
+
+        #endregion
+
+        #region Private methods
 
         private async Task HandleCommentAdded(CommentDTO newComment)
         {
@@ -18,7 +24,9 @@ namespace ClientSite.WASM.Features.Posts.Ui
             };
 
             Post = updatedPost;
-            await OnPostUpdated.InvokeAsync(updatedPost);
+
+            if (OnPostUpdated.HasDelegate)
+                await OnPostUpdated.InvokeAsync(updatedPost);
         }
 
         private async Task HandleCommentDeleted(Guid commentId)
@@ -29,29 +37,46 @@ namespace ClientSite.WASM.Features.Posts.Ui
             };
 
             Post = updatedPost;
-            await OnPostUpdated.InvokeAsync(updatedPost);
+
+            if (OnPostUpdated.HasDelegate)
+                await OnPostUpdated.InvokeAsync(updatedPost);
         }
 
         private async Task HandleReactionAdded(ReactionDTO newReaction)
         {
+            var reactionsWithoutUser = Post.Reactions
+                .Where(r => r.UserId != newReaction.UserId)
+                .ToList();
+
             var updatedPost = Post with
             {
-                Reactions = Post.Reactions.Append(newReaction).ToList(),
+                Reactions = reactionsWithoutUser.Append(newReaction).ToList(),
             };
 
             Post = updatedPost;
-            await OnPostUpdated.InvokeAsync(updatedPost);
+
+            if (OnPostUpdated.HasDelegate)
+                await OnPostUpdated.InvokeAsync(updatedPost);
         }
 
-        private async Task HandleReactionRemoved(Guid postId)
+        private async Task HandleReactionRemoved(ReactionDTO removedReaction)
         {
+            var updatedReactions = Post.Reactions
+                .Where(r => r.UserId != removedReaction.UserId ||
+                           (r.UserId == removedReaction.UserId && r.Type != removedReaction.Type))
+                .ToList();
+
             var updatedPost = Post with
             {
-                Reactions = Post.Reactions.ToList(),
+                Reactions = updatedReactions,
             };
 
             Post = updatedPost;
-            await OnPostUpdated.InvokeAsync(updatedPost);
+
+            if (OnPostUpdated.HasDelegate)
+                await OnPostUpdated.InvokeAsync(updatedPost);
         }
+
+        #endregion
     }
 }

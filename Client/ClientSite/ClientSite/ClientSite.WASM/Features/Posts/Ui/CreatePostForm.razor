@@ -1,36 +1,54 @@
-﻿<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
-    <h3 class="mb-4 text-xl font-semibold">Создать новый пост</h3>
+﻿@using ClientSite.WASM.Shared.Components.Buttons.Ui
+@using ClientSite.WASM.Shared.Components.Inputs
+@using ClientSite.WASM.Shared.Components.Inputs.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+@using ClientSite.WASM.Shared.Components.Texts.Ui
+
+<div class="mb-6 w-full rounded-lg bg-white p-6 shadow-md">
+
+    <SimpleText Type="SimpleTextType.H4"
+                class="mb-4">
+        Создать новый пост
+    </SimpleText>
 
     <div class="space-y-4">
+
         <div>
-            <label class="mb-1 block text-sm font-medium text-gray-700">
+            <SimpleText Type="SimpleTextType.H5"
+                        class="mb-1 block text-gray-700">
                 Заголовок
-            </label>
-            <input type="text" @bind="@NewPost.Title"
-                   class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
-                   placeholder="Введите заголовок..." />
+            </SimpleText>
+            
+            <BaseInput SimpleTextType="@SimpleTextType.H6" Placeholder="Введите заголовок..."
+                       ValueChanged="@OnTitleHandler"
+                       class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500" />
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-gray-700">
+            <SimpleText Type="SimpleTextType.H5"
+                        class="mb-1 block text-gray-700">
                 Содержимое
-            </label>
-            <textarea @bind="@NewPost.Content"
-                      rows="4"
-                      class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
-                      placeholder="Введите содержимое поста..."></textarea>
+            </SimpleText>
+
+            <TextArea SimpleTextType="@SimpleTextType.H6" Placeholder="Введите содержимое поста..."
+                      ValueChanged="@OnContentHandler"
+                      class="w-full rounded-lg border p-2 focus:ring-2 focus:ring-blue-500" />
         </div>
 
         <div class="flex justify-end space-x-3">
-            <button @onclick="@Cancel"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50">
+            <Button SimpleTextType="@SimpleTextType.Button2"
+                    OnClick="@OnCancelClick"
+                    class="w-full rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-sm transition-colors duration-150 hover:bg-blue-700">
                 Отмена
-            </button>
-            <button @onclick="@CreatePost"
-                    disabled="@(!CanCreatePost)"
-                    class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300">
+            </Button>
+
+            <Button SimpleTextType="@SimpleTextType.Button2"
+                    OnClick="@OnCreatePostClick"
+                    class="w-full rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-sm transition-colors duration-150 hover:bg-blue-700">
                 Опубликовать
-            </button>
+            </Button>
         </div>
+
     </div>
+
 </div>

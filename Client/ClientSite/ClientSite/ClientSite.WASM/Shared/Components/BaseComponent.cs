@@ -49,7 +49,7 @@ namespace ClientSite.WASM.Shared.Components
 
         #endregion
 
-        #region Protected methods
+        #region Public methods
 
         protected string GetTextClass(SimpleTextType type)
             => type switch

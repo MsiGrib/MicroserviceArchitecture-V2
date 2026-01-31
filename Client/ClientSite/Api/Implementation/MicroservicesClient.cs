@@ -16,14 +16,14 @@ namespace Api.Implementation
         private IIdentityMService? _identityService;
         private IContentMService? _contentService;
 
+        Configuration IMicroservicesClientInternal.Configuration => _configuration.Value;
+        IHttpClientFactory IMicroservicesClientInternal.HttpClientFactory => _httpClientFactory;
+
         public MicroservicesClient(IOptions<Configuration> configuration, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
-
-        Configuration IMicroservicesClientInternal.Configuration => _configuration.Value;
-        IHttpClientFactory IMicroservicesClientInternal.HttpClientFactory => _httpClientFactory;
 
         public IIdentityMService Identity =>
             _identityService ??= new IdentityMService(this, _configuration);

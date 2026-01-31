@@ -10,7 +10,8 @@ namespace ClientSite.WASM.Shared.Services
         private readonly IClientStorage _clientStorage;
         private readonly IMicroservicesClient _microservicesClient;
         private readonly SemaphoreSlim _refreshLock = new(1, 1);
-        private DateTime? _lastRefreshAttempt;
+
+        private DateTime? _lastRefreshAttempt = null;
 
         public AuthTokenService(IClientStorage clientStorage, IMicroservicesClient microservicesClient)
         {
@@ -23,11 +24,9 @@ namespace ClientSite.WASM.Shared.Services
             var settings = await _clientStorage.GetClientSettingsAsync();
 
             if (settings == null ||
-                string.IsNullOrWhiteSpace(settings.AccessToken) ||
-                string.IsNullOrWhiteSpace(settings.RefreshToken))
-            {
+                    string.IsNullOrWhiteSpace(settings.AccessToken) ||
+                    string.IsNullOrWhiteSpace(settings.RefreshToken))
                 return null;
-            }
 
             return settings.AccessToken;
         }

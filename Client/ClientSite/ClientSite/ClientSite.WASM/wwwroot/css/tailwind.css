@@ -45,3 +45,46 @@
 }
 
 /* Loaders End */
+
+/* Animation For Reactions Start */
+
+@keyframes reaction-pop {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.reaction-pop {
+    animation: reaction-pop 0.2s ease-out;
+}
+
+.reaction-modal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 #EDF2F7;
+}
+
+    .reaction-modal-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .reaction-modal-scroll::-webkit-scrollbar-track {
+        background: #EDF2F7;
+        border-radius: 3px;
+    }
+
+    .reaction-modal-scroll::-webkit-scrollbar-thumb {
+        background: #CBD5E0;
+        border-radius: 3px;
+    }
+
+/* Animation For Reactions End */

@@ -5,27 +5,18 @@ namespace ClientSite.WASM.Shared.Services
 {
     public class AuthStateService : IAuthStateService
     {
-        #region Private Fields
-
         private readonly IClientStorage _clientStorage;
         private readonly IAuthTokenService _authTokenService;
+
         private bool _isAuthenticated = false;
 
-        #endregion
-
-        #region Public Fields
-
         public event Action? OnAuthStateChanged;
-
-        #endregion
 
         public AuthStateService(IClientStorage clientStorage, IAuthTokenService authTokenService)
         {
             _clientStorage = clientStorage;
             _authTokenService = authTokenService;
         }
-
-        #region Public methods
 
         public async Task<bool> CheckAuthenticationAsync()
         {
@@ -64,7 +55,5 @@ namespace ClientSite.WASM.Shared.Services
 
         private void NotifyStateChanged()
             => OnAuthStateChanged?.Invoke();
-
-        #endregion
     }
 }

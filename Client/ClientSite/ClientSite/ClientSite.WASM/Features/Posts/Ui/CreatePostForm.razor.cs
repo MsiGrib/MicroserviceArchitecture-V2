@@ -8,17 +8,29 @@ namespace ClientSite.WASM.Features.Posts.Ui
 {
     public partial class CreatePostForm
     {
+        #region Params
+
         [Parameter] public EventCallback<Guid> OnPostCreated { get; set; }
         [Parameter] public EventCallback OnCancel { get; set; }
+
+        #endregion
+
+        #region Injects
 
         [Inject] private IAuthenticatedApiService AuthenticatedApiService { get; init; } = default!;
         [Inject] private IMicroservicesClient MicroservicesClient { get; init; } = default!;
 
+        #endregion
+
+        #region UI Fields
+
         private PostsApi? _api = null;
-        private CreatePostRequest NewPost { get; set; } = new();
-        private bool CanCreatePost =>
-            !string.IsNullOrWhiteSpace(NewPost.Title) &&
-            !string.IsNullOrWhiteSpace(NewPost.Content);
+        private string _title = string.Empty;
+        private string _content = string.Empty;
+
+        #endregion
+
+        #region LC Methods
 
         protected override void OnInitialized()
         {
@@ -27,13 +39,33 @@ namespace ClientSite.WASM.Features.Posts.Ui
             _api = new PostsApi(MicroservicesClient, AuthenticatedApiService);
         }
 
-        private async Task CreatePost()
+        #endregion
+
+        #region Private methods
+
+        private void OnTitleHandler(string title)
+            => _title = title;
+
+        private void OnContentHandler(string content)
+            => _content = content;
+
+        private async Task OnCreatePostClick()
         {
+            if (string.IsNullOrWhiteSpace(_title) || string.IsNullOrWhiteSpace(_content))
+                return;
+
             try
             {
-                var postId = await _api!.CreatePost(NewPost);
-                NewPost = new CreatePostRequest();
-                await OnPostCreated.InvokeAsync(postId);
+                var request = new CreatePostRequest
+                {
+                    Title = _title,
+                    Content = _content,
+                };
+
+                var postId = await _api!.CreatePost(request);
+
+                if (OnPostCreated.HasDelegate)
+                    await OnPostCreated.InvokeAsync(postId);
             }
             catch (Exception ex)
             {
@@ -41,10 +73,15 @@ namespace ClientSite.WASM.Features.Posts.Ui
             }
         }
 
-        private async Task Cancel()
+        private async Task OnCancelClick()
         {
-            NewPost = new CreatePostRequest();
-            await OnCancel.InvokeAsync();
+            _title = string.Empty;
+            _content = string.Empty;
+
+            if (OnCancel.HasDelegate)
+                await OnCancel.InvokeAsync();
         }
+
+        #endregion
     }
 }

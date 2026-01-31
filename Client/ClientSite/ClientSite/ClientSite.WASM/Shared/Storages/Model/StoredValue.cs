@@ -2,7 +2,7 @@
 {
     public class StoredValue<T>
     {
-        public T? Value { get; set; }
-        public DateTime StoredAt { get; set; }
+        public T? Value { get; init; }
+        public DateTime StoredAt { get; init; }
     }
 }

@@ -1,16 +1,20 @@
 ﻿@using ClientSite.WASM.Features.Comments.Api
+@using ClientSite.WASM.Shared.Components.Buttons.Ui
+@using ClientSite.WASM.Shared.Components.Inputs.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
 
 <div class="mt-4">
-    <textarea @bind="@_newCommentText"
-              placeholder="Добавить комментарий..."
-              class="w-full rounded-lg border p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-    </textarea>
+
+    <TextArea SimpleTextType="@SimpleTextType.H6" Placeholder="Добавить комментарий..." Rows="2"
+              ValueChanged="@OnContentHandler"
+              class="w-full rounded-lg border p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
 
     <div class="mt-2 flex justify-end">
-        <button @onclick="@AddComment"
-                disabled="@string.IsNullOrWhiteSpace(_newCommentText)"
-                class="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300">
+        <Button SimpleTextType="@SimpleTextType.Button2"
+                OnClick="@OnAddCommentClick"
+                class="rounded-xl bg-blue-500 px-6 py-2.5 text-white shadow-sm transition-colors duration-150 hover:bg-blue-600">
             Отправить
-        </button>
+        </Button>
     </div>
+
 </div>

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace ClientSite.WASM.Shared.Components.Inputs
+namespace ClientSite.WASM.Shared.Components.Inputs.Ui
 {
     public partial class BaseInput : BaseComponent
     {

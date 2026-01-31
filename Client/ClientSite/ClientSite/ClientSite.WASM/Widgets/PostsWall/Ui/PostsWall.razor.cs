@@ -2,32 +2,41 @@
 using Api.Models.MServices.ContentMService.Endpoints.PostEndpoints.Responses;
 using ClientSite.WASM.Features.Posts.Api;
 using ClientSite.WASM.Shared.Services;
-using ClientSite.WASM.Shared.Storages.Lib;
-using ClientSite.WASM.Shared.Storages.Model;
 using Microsoft.AspNetCore.Components;
 
 namespace ClientSite.WASM.Widgets.PostsWall.Ui
 {
     public partial class PostsWall
     {
-        [Inject] private IClientStorage ClientStorage { get; init; } = default!;
+        #region Injects
+
         [Inject] private IAuthenticatedApiService AuthenticatedApiService { get; init; } = default!;
         [Inject] private IMicroservicesClient MicroservicesClient { get; init; } = default!;
+
+        #endregion
+
+        #region UI Fields
 
         private PostsApi? _api = null;
         private List<PostDTO> _posts = new();
         private bool _isLoading = true;
-        private ClientSettings? _clientSettings = null;
-        private bool IsCreatingPost { get; set; } = false;
+        private bool _isCreatingPost = false;
+
+        #endregion
+
+        #region LC Methods
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
 
             _api = new PostsApi(MicroservicesClient, AuthenticatedApiService);
-            _clientSettings = await ClientStorage.GetClientSettingsAsync();
             await LoadPosts();
         }
+
+        #endregion
+
+        #region Private methods
 
         private async Task LoadPosts()
         {
@@ -50,13 +59,11 @@ namespace ClientSite.WASM.Widgets.PostsWall.Ui
         }
 
         private void ShowCreatePostForm()
-        {
-            IsCreatingPost = true;
-        }
+            => _isCreatingPost = true;
 
         private async Task HandlePostCreated(Guid postId)
         {
-            IsCreatingPost = false;
+            _isCreatingPost = false;
             await LoadPosts();
         }
 
@@ -69,5 +76,7 @@ namespace ClientSite.WASM.Widgets.PostsWall.Ui
                 StateHasChanged();
             }
         }
+
+        #endregion
     }
 }

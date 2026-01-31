@@ -6,20 +6,14 @@ namespace ClientSite.WASM.Shared.Storages.Lib
 {
     public class StorageService
     {
-        #region Private Fields
-
-        private readonly IJSRuntime? _jsRuntime;
-        private bool _isBrowser;
-
-        #endregion
+        private readonly IJSRuntime? _jsRuntime = null;
+        private bool _isBrowser = false;
 
         public StorageService(IJSRuntime? jsRuntime = null)
         {
             _jsRuntime = jsRuntime;
             _isBrowser = jsRuntime != null;
         }
-
-        #region Public methods
 
         public async Task Set<T>(string key, T value)
         {
@@ -75,7 +69,5 @@ namespace ClientSite.WASM.Shared.Storages.Lib
             if (!_isBrowser || _jsRuntime == null) return;
             await _jsRuntime.InvokeVoidAsync("localStorage.clear");
         }
-
-        #endregion
     }
 }

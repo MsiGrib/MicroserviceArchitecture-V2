@@ -12,8 +12,9 @@ namespace Api.Implementation
         protected readonly RestClient RestClient;
         protected readonly Configuration Settings;
         protected readonly string ServiceBasePath;
-        private readonly Func<Task<string?>> _getTokenCallback;
-        private readonly Func<Task<bool>> _refreshTokenCallback;
+
+        private readonly Func<Task<string?>>? _getTokenCallback;
+        private readonly Func<Task<bool>>? _refreshTokenCallback;
 
         protected BaseEndPoint(IMicroservicesClient client,
             string serviceName, string? customBasePath = null,

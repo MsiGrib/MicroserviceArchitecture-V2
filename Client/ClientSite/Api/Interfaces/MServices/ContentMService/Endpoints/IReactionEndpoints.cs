@@ -7,6 +7,6 @@ namespace Api.Interfaces.MServices.ContentMService.Endpoints
     {
         public Task<ReactionDTO> AddOrUpdateReaction(AddReactionRequest request, string token, CancellationToken cancellationToken = default);
         public Task RemoveReaction(Guid postId, string token, CancellationToken cancellationToken = default);
-        public Task<List<ReactionDTO>> GetReactionsByPost(Guid postId, CancellationToken cancellationToken = default);
+        public Task<List<ReactionDTO>?> GetReactionsByPost(Guid postId, CancellationToken cancellationToken = default);
     }
 }

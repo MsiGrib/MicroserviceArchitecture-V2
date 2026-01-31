@@ -1,41 +1,62 @@
 ﻿@using ClientSite.WASM.Features.Comments.Ui
+@using ClientSite.WASM.Features.Reactions.Models
 @using ClientSite.WASM.Features.Reactions.Ui
+@using ClientSite.WASM.Shared.Components.Texts.Lib
+@using ClientSite.WASM.Shared.Components.Texts.Ui
 
 <div class="mb-6 rounded-lg bg-white p-6 shadow-md">
 
-    <h3 class="mb-2 text-xl font-semibold text-gray-800">@Post.Title</h3>
-    
-    <div class="mb-4 text-gray-600">
+    <SimpleText Type="SimpleTextType.H5"
+                class="break-all text-black">
+        @Post.Title
+    </SimpleText>
+
+    <SimpleText Type="SimpleTextType.H6"
+                class="break-all text-gray-600">
         @Post.Content
-    </div>
-    
+    </SimpleText>
+
     <div class="mb-4 flex items-center justify-between text-sm text-gray-500">
         <div>
-            <span>Автор: @Post.UserId.ToString()[..8]...</span>
+            <span>Автор: @Post.UserId.ToString()</span>
             <span class="mx-2">•</span>
             <span>@Post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
         </div>
     </div>
-    
-    <div class="border-t pt-3">
-        <ReactionButton 
-            PostId="@Post.Id"
-            Reactions="@Post.Reactions.ToList()"
-            OnReactionAdded="HandleReactionAdded"
-            OnReactionRemoved="HandleReactionRemoved" />
+
+    <div class="border-t border-gray-300 pt-3">
+
+        <div class="flex items-center justify-between">
+
+            <div class="flex-1">
+                <ReactionButton PostId="@Post.Id" Reactions="@Post.Reactions.ToList()"
+                                OnReactionAdded="@HandleReactionAdded" OnReactionRemoved="@HandleReactionRemoved" />
+            </div>
+
+            @if (Post.Reactions.Any())
+            {
+                <div class="ml-4 text-sm text-gray-600">
+                    <span class="font-semibold">@Post.Reactions.Count</span> реакций
+                </div>
+            }
+
+        </div>
+
     </div>
-    
-    <div class="mt-3 border-t pt-4">
-        <h4 class="mb-3 font-medium text-gray-700">Комментарии (@Post.Comments.Count)</h4>
-        
-        <CommentList 
-            PostId="@Post.Id"
-            Comments="@Post.Comments.ToList()"
-            OnCommentAdded="HandleCommentAdded"
-            OnCommentDeleted="HandleCommentDeleted" />
-        
-        <CommentForm 
-            PostId="@Post.Id"
-            OnCommentAdded="HandleCommentAdded" />
+
+    <div class="mt-3 border-t border-gray-300 pt-4">
+
+        <SimpleText Type="SimpleTextType.H6"
+                    class="mb-3 text-gray-700">
+            Комментарии (@Post.Comments.Count)
+        </SimpleText>
+
+        <CommentList Comments="@Post.Comments.ToList()"
+                     OnCommentDeleted="@HandleCommentDeleted" />
+
+        <CommentForm PostId="@Post.Id"
+                     OnCommentAdded="@HandleCommentAdded" />
+
     </div>
+
 </div>

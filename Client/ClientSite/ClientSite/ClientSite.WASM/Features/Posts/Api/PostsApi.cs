@@ -5,13 +5,10 @@ using ClientSite.WASM.Shared.Services;
 
 namespace ClientSite.WASM.Features.Posts.Api
 {
-    public class PostsApi(IMicroservicesClient client, IAuthenticatedApiService authenticatedApiService)
+    public class PostsApi(IMicroservicesClient _client, IAuthenticatedApiService _authenticatedApiService)
     {
-        private readonly IMicroservicesClient _client = client;
-        private readonly IAuthenticatedApiService _authenticatedApiService = authenticatedApiService;
-
-        public Task<List<PostDTO>> GetAllPosts(CancellationToken cancellationToken = default)
-            => _client.Content.Post.GetAllPosts(cancellationToken);
+        public async Task<List<PostDTO>> GetAllPosts(CancellationToken cancellationToken = default)
+            => (await _client.Content.Post.GetAllPosts(cancellationToken)) ?? new List<PostDTO>();
 
         public Task<Guid> CreatePost(CreatePostRequest request, CancellationToken cancellationToken = default)
             => _authenticatedApiService.ExecuteWithTokenRefreshAsync(

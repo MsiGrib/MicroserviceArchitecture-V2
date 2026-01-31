@@ -2,7 +2,7 @@
 {
     public record CreateCommentRequest
     {
-        public Guid PostId { get; set; }
-        public string Text { get; set; } = string.Empty;
+        public required Guid PostId { get; init; }
+        public required string Text { get; init; }
     }
 }

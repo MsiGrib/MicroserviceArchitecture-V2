@@ -4,8 +4,6 @@ namespace ClientSite.WASM.Shared.Storages.Lib
 {
     public class ServerClientStorage : IClientStorage
     {
-        #region Public methods
-
         public Task SetClientSettingsAsync(ClientSettings value)
             => Task.CompletedTask;
 
@@ -14,7 +12,5 @@ namespace ClientSite.WASM.Shared.Storages.Lib
 
         public Task ClearClientSettingsAsync()
             => Task.CompletedTask;
-
-        #endregion
     }
 }

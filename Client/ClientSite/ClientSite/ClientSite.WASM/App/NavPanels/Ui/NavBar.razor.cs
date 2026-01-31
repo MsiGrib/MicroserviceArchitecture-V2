@@ -57,6 +57,42 @@ namespace ClientSite.WASM.App.NavPanels.Ui
 
         #region Private methods
 
+        #region Clicks
+
+        private void OnNavigateToHomeClick()
+            => Navigation.NavigateTo("/");
+
+        private void OnNavigateToLoginClick()
+            => Navigation.NavigateTo("/SignIn");
+
+        private void OnNavigateToRegisterClick()
+            => Navigation.NavigateTo("/SignUp");
+
+        private void OnNavigateToPostsClick()
+            => Navigation.NavigateTo("/Posts");
+
+        private async Task OnLogOutClick()
+        {
+            try
+            {
+                var clientSettings = await ClientStorage.GetClientSettingsAsync();
+                if (clientSettings != null && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken))
+                {
+                    await AuthenticatedApiService.ExecuteWithTokenRefreshAsync(async token =>
+                    {
+                        await _api!.LogOut(clientSettings.RefreshToken, token);
+                    });
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+            catch { }
+
+            await AuthStateService.LogoutAsync();
+            Navigation.NavigateTo("/");
+        }
+
+        #endregion
+
         private async void HandleAuthStateChanged()
         {
             if (_disposed || _cts?.IsCancellationRequested == true) return;
@@ -78,39 +114,6 @@ namespace ClientSite.WASM.App.NavPanels.Ui
             {
                 _isAuthenticated = false;
             }
-        }
-
-
-        private void NavigateToHome()
-            => Navigation.NavigateTo("/");
-
-        private void NavigateToLogin()
-            => Navigation.NavigateTo("/SignIn");
-
-        private void NavigateToRegister()
-            => Navigation.NavigateTo("/SignUp");
-
-        private void NavigateToPosts()
-            => Navigation.NavigateTo("/Posts");
-
-        private async Task LogOut()
-        {
-            try
-            {
-                var clientSettings = await ClientStorage.GetClientSettingsAsync();
-                if (clientSettings != null && !string.IsNullOrWhiteSpace(clientSettings.RefreshToken))
-                {
-                    await AuthenticatedApiService.ExecuteWithTokenRefreshAsync(async token =>
-                    {
-                        await _api!.LogOut(clientSettings.RefreshToken, token);
-                    });
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch { }
-
-            await AuthStateService.LogoutAsync();
-            Navigation.NavigateTo("/");
         }
 
         #endregion

@@ -17,9 +17,4 @@
     <ProjectReference Include="..\..\Api\Api.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Comments\Models\" />
-    <Folder Include="Features\Posts\Models\" />
-  </ItemGroup>
-
 </Project>
