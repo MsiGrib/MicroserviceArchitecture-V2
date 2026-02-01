@@ -143,8 +143,5 @@ namespace BLL.Integrations.IdentityMService.Services
                 return null;
             }
         }
-
-        public Task<bool> ValidateApiKeyAsync(string apiKey)
-            => Task.FromResult(apiKey == _apiKey);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Common.Models;
+using System.Security.Claims;
 
 namespace ContentMService.Middleware
 {
@@ -7,12 +8,14 @@ namespace ContentMService.Middleware
         private readonly RequestDelegate _next;
         private readonly IConfiguration _configuration;
         private readonly ILogger<GatewayAuthMiddleware> _logger;
+        private readonly AppSettings _appSettings;
 
         public GatewayAuthMiddleware(RequestDelegate next, IConfiguration configuration, ILogger<GatewayAuthMiddleware> logger)
         {
             _next = next;
             _configuration = configuration;
             _logger = logger;
+            _appSettings = _configuration.Get<AppSettings>()!;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -58,8 +61,7 @@ namespace ContentMService.Middleware
                 ? Array.Empty<string>()
                 : rolesHeader.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
-            var secret = _configuration["Jwt:Key"]
-                ?? _configuration["JwtSettings:Secret"]
+            var secret = _appSettings.Jwt.Key
                 ?? throw new InvalidOperationException("JWT secret is not configured");
 
             if (!ValidateHeaderSignature(userId, roles, signature, secret))

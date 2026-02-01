@@ -6,6 +6,5 @@ namespace BLL.Integrations.IdentityMService.Interfaces
     {
         public Task<UserSmallInfoDTO?> GetUserSmallInfoAsync(Guid userId, CancellationToken cancellationToken = default);
         public Task<List<UserSmallInfoDTO>?> GetUsersSmallInfoAsync(List<Guid> userIds, CancellationToken cancellationToken = default);
-        public Task<bool> ValidateApiKeyAsync(string apiKey);
     }
 }

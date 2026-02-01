@@ -33,3 +33,6 @@ Update-Database -Context AppDbContext -Project DAL -StartupProject IdentityMServ
 
 Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject ContentMService
 Update-Database -Context AppDbContext -Project DAL -StartupProject ContentMService
+
+Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject AnalyticsMService
+Update-Database -Context AppDbContext -Project DAL -StartupProject AnalyticsMService

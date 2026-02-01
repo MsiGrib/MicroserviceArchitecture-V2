@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
 {
-    public class BaseRepository<T> : IBaseRepository<T>
+    public abstract class BaseRepository<T> : IBaseRepository<T>
         where T : class
     {
         protected readonly AppDbContext _context;

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AnalyticsMService/AnalyticsMService.csproj" />
+  <Project Path="BLL/BLL.csproj" />
+  <Project Path="Common/Common.csproj" />
+  <Project Path="DAL/DAL.csproj" />
+</Solution>

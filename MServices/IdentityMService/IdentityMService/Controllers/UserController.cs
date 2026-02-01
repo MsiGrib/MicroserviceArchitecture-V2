@@ -1,4 +1,5 @@
 ﻿using BLL.Services.Interfaces.User;
+using IdentityMService.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,17 +38,12 @@ namespace IdentityMService.Controllers
             }
         }
 
+        [ApiKey]
         [HttpGet("small-info/{userId}")]
         public async Task<IActionResult> GetSmallInfo([FromRoute] Guid userId)
         {
             try
             {
-                var apiKey = Request.Headers["X-Service-Api-Key"].FirstOrDefault();
-                var validApiKey = _configuration["Services:ContentService:ApiKey"];
-
-                if (string.IsNullOrEmpty(apiKey) || apiKey != validApiKey)
-                    return Unauthorized(new { error = "Invalid or missing API key" });
-
                 var result = await _userService.GetUserSmallInfo(userId);
 
                 if (result == null)
@@ -62,17 +58,12 @@ namespace IdentityMService.Controllers
             }
         }
 
+        [ApiKey]
         [HttpPost("small-info/batch")]
         public async Task<IActionResult> GetBatchSmallInfo([FromBody] List<Guid> userIds)
         {
             try
             {
-                var apiKey = Request.Headers["X-Service-Api-Key"].FirstOrDefault();
-                var validApiKey = _configuration["Services:ContentService:ApiKey"];
-
-                if (string.IsNullOrEmpty(apiKey) || apiKey != validApiKey)
-                    return Unauthorized(new { error = "Invalid or missing API key" });
-
                 var result = await _userService.GetBatchUserSmallInfo(userIds);
 
                 if (result == null)

@@ -8,6 +8,10 @@ namespace IdentityMService.Middleware
         private readonly IConfiguration _configuration;
         private readonly ILogger<ServiceIpWhitelistMiddleware> _logger;
         private readonly HashSet<string> _allowedIps;
+        private readonly List<string> _endpoints = new() 
+        {
+            "/small-info", "/small-info/batch",
+        };
 
         public ServiceIpWhitelistMiddleware(RequestDelegate next, IConfiguration configuration,
             ILogger<ServiceIpWhitelistMiddleware> logger)
@@ -25,7 +29,7 @@ namespace IdentityMService.Middleware
         {
             var path = context.Request.Path.Value ?? "";
 
-            if (path.Contains("/small-info") || path.Contains("/small-info/batch"))
+            if (_endpoints.Contains(path))
             {
                 var apiKey = context.Request.Headers["X-Service-Api-Key"].FirstOrDefault();
 

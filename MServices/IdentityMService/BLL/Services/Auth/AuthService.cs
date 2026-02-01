@@ -1,8 +1,11 @@
 ﻿using BLL.DTOs.Auth.Requests;
 using BLL.DTOs.Auth.Responses;
+using BLL.Integrations.Kafka.Outbox;
+using BLL.Integrations.Kafka.Outbox.Events;
 using BLL.Services.Interfaces.Auth;
 using Common.Models;
 using DAL.Repositories.Interfaces.User;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,15 +24,25 @@ namespace BLL.Services.Auth
         private readonly IDistributedCache _redisCache;
         private readonly IOptions<JwtSettings> _jwtSettings;
         private readonly ILogger<AuthService> _logger;
+        private readonly IOutboxService _outboxService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher,
-            IDistributedCache redisCache, IOptions<JwtSettings> jwtSettings, ILogger<AuthService> logger)
+        public AuthService(
+            IUserRepository userRepository,
+            IPasswordHasher passwordHasher,
+            IDistributedCache redisCache,
+            IOptions<JwtSettings> jwtSettings,
+            ILogger<AuthService> logger,
+            IOutboxService outboxService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _redisCache = redisCache;
             _jwtSettings = jwtSettings;
             _logger = logger;
+            _outboxService = outboxService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -39,6 +52,8 @@ namespace BLL.Services.Auth
 
             if (await _userRepository.ExistsByUsernameAsync(request.Username))
                 throw new Exception("Username already exists");
+
+            var httpContext = _httpContextAccessor.HttpContext;
 
             var user = new DAL.Entities.User
             {
@@ -52,6 +67,20 @@ namespace BLL.Services.Auth
             };
 
             await _userRepository.AddAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            var userRegisteredEvent = new UserRegisteredEvent
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                RegisteredAt = user.CreatedAt,
+                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString(),
+                TimeZone = TimeZoneInfo.Local.Id
+            };
+
+            await _outboxService.AddEventAsync("UserRegistered", userRegisteredEvent, "identity.events", user.Id);
             await _userRepository.SaveChangesAsync();
 
             var tokens = await GenerateTokensAsync(user);
@@ -72,9 +101,24 @@ namespace BLL.Services.Auth
             if (!_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
                 throw new Exception("Invalid login credentials");
 
+            var httpContext = _httpContextAccessor.HttpContext;
+
             user.LastLoginAt = DateTime.UtcNow;
 
             _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+
+            var userLoggedInEvent = new UserLoggedInEvent
+            {
+                UserId = user.Id,
+                LoggedInAt = user.LastLoginAt.Value,
+                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString(),
+                TimeZone = TimeZoneInfo.Local.Id,
+                LoginType = "Standard"
+            };
+
+            await _outboxService.AddEventAsync("UserLoggedIn", userLoggedInEvent, "identity.events", user.Id);
             await _userRepository.SaveChangesAsync();
 
             var tokens = await GenerateTokensAsync(user);
@@ -108,18 +152,6 @@ namespace BLL.Services.Auth
             return tokens;
         }
 
-        public async Task RevokeTokenAsync(string refreshToken, Guid userId)
-        {
-            var tokenKey = $"refresh:{refreshToken}";
-            var storedUserId = await _redisCache.GetStringAsync(tokenKey);
-
-            if (!string.IsNullOrEmpty(storedUserId) && storedUserId == userId.ToString())
-            {
-                await _redisCache.RemoveAsync(tokenKey);
-                _logger.LogInformation("Token revoked for user: {UserId}", userId);
-            }
-        }
-
         public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
         {
             var user = await _userRepository.GetByIdAsync(userId);
@@ -138,8 +170,27 @@ namespace BLL.Services.Auth
 
         public async Task LogoutAsync(string refreshToken, Guid userId)
         {
+            var httpContext = _httpContextAccessor.HttpContext;
+
             var tokenKey = $"refresh:{refreshToken}";
-            await _redisCache.RemoveAsync(tokenKey);
+            var storedUserId = await _redisCache.GetStringAsync(tokenKey);
+
+            if (!string.IsNullOrEmpty(storedUserId) && storedUserId == userId.ToString())
+            {
+                await _redisCache.RemoveAsync(tokenKey);
+                _logger.LogInformation("Token revoked for user: {UserId}", userId);
+            }
+
+            var userLoggedOutEvent = new UserLoggedOutEvent
+            {
+                UserId = userId,
+                LoggedOutAt = DateTime.UtcNow,
+                LogoutType = "Manual",
+                Reason = "User initiated logout"
+            };
+
+            await _outboxService.AddEventAsync("UserLoggedOut", userLoggedOutEvent, "identity.events", userId);
+            await _userRepository.SaveChangesAsync();
 
             _logger.LogInformation("User logged out: {UserId}", userId);
         }

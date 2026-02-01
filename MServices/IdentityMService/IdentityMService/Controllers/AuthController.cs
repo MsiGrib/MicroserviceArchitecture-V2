@@ -76,7 +76,7 @@ namespace IdentityMService.Controllers
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
             var userId = GetUserIdFromClaims();
-            await _authService.RevokeTokenAsync(request.RefreshToken, userId);
+            await _authService.LogoutAsync(request.RefreshToken, userId);
 
             return Ok();
         }

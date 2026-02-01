@@ -14,7 +14,13 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aspire.Confluent.Kafka" Version="13.1.0" />
+		<PackageReference Include="Envisia.BackgroundService" Version="7.1.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
   </ItemGroup>

@@ -6,6 +6,7 @@ namespace DAL
     public class AppDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -26,6 +27,15 @@ namespace DAL
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("NOW()");
+            });
+
+            modelBuilder.Entity<OutboxMessage>(entity =>
+            {
+                entity.HasIndex(e => e.Status);
+
+                entity.HasIndex(e => e.CreatedAt);
+
+                entity.HasIndex(e => new { e.Status, e.CreatedAt });
             });
 
             return modelBuilder;
