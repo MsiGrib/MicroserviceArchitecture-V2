@@ -1,4 +1,5 @@
-﻿using DAL.Entities;
+﻿using BLL.Integrations.Kafka.Models;
+using DAL.Entities;
 using DAL.Repositories.Interfaces.LoginStatistic;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,9 +11,7 @@ namespace BLL.Integrations.Kafka.EventHandlers
         private readonly ILoginStatisticRepository _loginRepository;
         private readonly ILogger<UserLoggedInEventHandler> _logger;
 
-        public UserLoggedInEventHandler(
-            ILoginStatisticRepository loginRepository,
-            ILogger<UserLoggedInEventHandler> logger)
+        public UserLoggedInEventHandler(ILoginStatisticRepository loginRepository, ILogger<UserLoggedInEventHandler> logger)
         {
             _loginRepository = loginRepository;
             _logger = logger;
@@ -24,7 +23,6 @@ namespace BLL.Integrations.Kafka.EventHandlers
             {
                 var @event = JsonConvert.DeserializeObject<UserLoggedInEvent>(message);
 
-                // Конвертируем в местное время, если нужно
                 DateTime? localTime = null;
                 if (!string.IsNullOrEmpty(@event.TimeZone))
                 {
@@ -54,7 +52,7 @@ namespace BLL.Integrations.Kafka.EventHandlers
                     IpAddress = @event.IpAddress,
                     UserAgent = @event.UserAgent,
                     SourceTypeId = DetermineSourceTypeId(@event.LoginType),
-                    StatusTypeId = 1 // Success
+                    StatusTypeId = 1,
                 };
 
                 await _loginRepository.AddAsync(loginStatistic);
@@ -78,16 +76,6 @@ namespace BLL.Integrations.Kafka.EventHandlers
                 "Biometric" => 3,
                 _ => 1
             };
-        }
-
-        private class UserLoggedInEvent
-        {
-            public Guid UserId { get; set; }
-            public DateTime LoggedInAt { get; set; }
-            public string IpAddress { get; set; }
-            public string UserAgent { get; set; }
-            public string TimeZone { get; set; }
-            public string LoginType { get; set; }
         }
     }
 }

@@ -10,5 +10,6 @@ namespace BLL.Services.Interfaces.Auth
         public Task<AuthResponse> RefreshTokenAsync(string refreshToken);
         public Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
         public Task LogoutAsync(string refreshToken, Guid userId);
+        public Task<Guid?> GetUserIdFromRefreshTokenAsync(string refreshToken);
     }
 }

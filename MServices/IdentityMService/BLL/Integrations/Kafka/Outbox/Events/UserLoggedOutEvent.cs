@@ -1,10 +1,10 @@
 ﻿namespace BLL.Integrations.Kafka.Outbox.Events
 {
-    public class UserLoggedOutEvent
+    public record UserLoggedOutEvent
     {
-        public Guid UserId { get; set; }
-        public DateTime LoggedOutAt { get; set; }
-        public string LogoutType { get; set; } = string.Empty;
-        public string Reason { get; set; } = string.Empty;
+        public Guid UserId { get; init; }
+        public DateTime LoggedOutAt { get; init; }
+        public string LogoutType { get; init; } = string.Empty;
+        public string Reason { get; init; } = string.Empty;
     }
 }

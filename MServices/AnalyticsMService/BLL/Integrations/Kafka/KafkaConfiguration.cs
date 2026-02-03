@@ -2,9 +2,9 @@
 {
     public record KafkaConfiguration
     {
-        public string BootstrapServers { get; set; } = string.Empty;
-        public string IdentityEventsTopic { get; set; } = string.Empty;
-        public string ContentEventsTopic { get; set; } = string.Empty;
-        public string ConsumerGroup { get; set; } = string.Empty;
+        public string BootstrapServers { get; init; } = string.Empty;
+        public string IdentityEventsTopic { get; init; } = string.Empty;
+        public string ContentEventsTopic { get; init; } = string.Empty;
+        public string ConsumerGroup { get; init; } = string.Empty;
     }
 }

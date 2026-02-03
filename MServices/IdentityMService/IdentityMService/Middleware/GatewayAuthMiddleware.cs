@@ -6,27 +6,63 @@ namespace IdentityMService.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<GatewayAuthMiddleware> _logger;
 
-        public GatewayAuthMiddleware(RequestDelegate next, IConfiguration configuration)
+        public GatewayAuthMiddleware(RequestDelegate next, IConfiguration configuration, ILogger<GatewayAuthMiddleware> logger)
         {
             _next = next;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            Console.WriteLine($"GatewayAuthMiddleware: Path = {context.Request.Path}");
+            _logger.LogDebug($"GatewayAuthMiddleware: Path = {context.Request.Path}, Method = {context.Request.Method}");
 
-            bool isPublicEndpoint =
-                context.Request.Path.StartsWithSegments("/login") ||
-                context.Request.Path.StartsWithSegments("/register") ||
-                context.Request.Path.StartsWithSegments("/refresh");
+            var apiKey = context.Request.Headers["X-Service-Api-Key"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                _logger.LogDebug("Request with API Key, checking service-to-service authentication");
+                var validApiKey = _configuration["Services:ContentService:ApiKey"];
 
-            Console.WriteLine($"IsPublicEndpoint: {isPublicEndpoint}");
+                if (apiKey == validApiKey)
+                {
+                    if (context.Request.Path.Value?.Contains("small-info") == true)
+                    {
+                        var allowedIps = _configuration
+                            .GetSection("Services:ContentService:AllowedIps")
+                            .Get<string[]>() ?? Array.Empty<string>();
+
+                        var clientIp = GetClientIp(context);
+                        if (!allowedIps.Contains(clientIp))
+                        {
+                            _logger.LogWarning("Blocked API Key request from unauthorized IP: {Ip}", clientIp);
+                            context.Response.StatusCode = 403;
+                            await context.Response.WriteAsJsonAsync(new { error = "IP not authorized" });
+                            return;
+                        }
+                    }
+
+                    _logger.LogDebug("API Key authentication successful");
+                    await _next(context);
+                    return;
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid API Key");
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsJsonAsync(new { error = "Invalid API Key" });
+                    return;
+                }
+            }
+
+            bool isPublicEndpoint = IsPublicEndpoint(context);
+
+            _logger.LogDebug($"IsPublicEndpoint: {isPublicEndpoint}");
 
             if (isPublicEndpoint)
             {
-                Console.WriteLine("Skipping auth check for public endpoint");
+                _logger.LogDebug("Skipping auth check for public endpoint");
                 await _next(context);
                 return;
             }
@@ -34,8 +70,8 @@ namespace IdentityMService.Middleware
             var userId = context.Request.Headers["X-User-Id"].FirstOrDefault();
             var signature = context.Request.Headers["X-Auth-Signature"].FirstOrDefault();
 
-            Console.WriteLine($"X-User-Id: {userId}");
-            Console.WriteLine($"X-Auth-Signature: {signature}");
+            _logger.LogDebug($"X-User-Id: {userId}");
+            _logger.LogDebug($"X-Auth-Signature: {signature}");
 
             if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(signature))
             {
@@ -46,14 +82,12 @@ namespace IdentityMService.Middleware
 
                 var secret = _configuration["Jwt:Key"] ?? _configuration["JwtSettings:Secret"];
 
-                Console.WriteLine($"Secret configured: {!string.IsNullOrEmpty(secret)}");
-                Console.WriteLine($"Roles: {string.Join(", ", roles)}");
+                _logger.LogDebug($"Roles: {string.Join(", ", roles)}");
 
                 if (!ValidateHeaderSignature(userId, roles, signature, secret))
                 {
-                    Console.WriteLine("Invalid signature");
+                    _logger.LogWarning("Invalid signature from API Gateway");
                     context.Response.StatusCode = 401;
-                    context.Response.ContentType = "application/json";
                     await context.Response.WriteAsJsonAsync(new { error = "Invalid signature" });
                     return;
                 }
@@ -70,44 +104,45 @@ namespace IdentityMService.Middleware
 
                 var identity = new ClaimsIdentity(claims, "Gateway");
                 context.User = new ClaimsPrincipal(identity);
-                Console.WriteLine($"User authenticated: {context.User.Identity?.IsAuthenticated}");
+                _logger.LogDebug($"User authenticated via Gateway: {context.User.Identity?.IsAuthenticated}");
+
+                await _next(context);
+                return;
             }
             else if (context.Request.Headers.ContainsKey("Authorization"))
             {
-                Console.WriteLine("Using Authorization header");
+                _logger.LogDebug("Using Authorization header for direct call");
                 await _next(context);
                 return;
             }
             else
             {
-                bool isProtectedEndpoint =
-                    context.Request.Path.StartsWithSegments("/logout") ||
-                    context.Request.Path.StartsWithSegments("/change-password");
-
-                Console.WriteLine($"IsProtectedEndpoint: {isProtectedEndpoint}");
-
-                if (isProtectedEndpoint)
+                _logger.LogWarning("Unauthorized access to protected endpoint");
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsJsonAsync(new
                 {
-                    Console.WriteLine("Unauthorized access to protected endpoint");
-                    context.Response.StatusCode = 401;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new
-                    {
-                        error = "Unauthorized",
-                        message = "Missing authentication headers"
-                    });
-                    return;
-                }
+                    error = "Unauthorized",
+                    message = "Missing authentication"
+                });
+                return;
             }
+        }
 
-            await _next(context);
+        private bool IsPublicEndpoint(HttpContext context)
+        {
+            var path = context.Request.Path.Value?.ToLower() ?? "";
+            var method = context.Request.Method.ToUpper();
+
+            return (path.Contains("/api/auth/login") && method == "POST") ||
+                   (path.Contains("/api/auth/register") && method == "POST") ||
+                   (path.Contains("/api/auth/refresh") && method == "POST");
         }
 
         private bool ValidateHeaderSignature(string userId, IEnumerable<string> roles, string signature, string secret)
         {
             if (string.IsNullOrEmpty(secret))
             {
-                Console.WriteLine("Validation failed: Secret is empty");
+                _logger.LogError("JWT secret is not configured");
                 return false;
             }
 
@@ -120,18 +155,25 @@ namespace IdentityMService.Middleware
                 var hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(data));
                 var expectedSignature = Convert.ToBase64String(hash);
 
-                bool isValid = expectedSignature == signature;
-                Console.WriteLine($"Signature validation: {isValid}");
-                Console.WriteLine($"Expected: {expectedSignature}");
-                Console.WriteLine($"Received: {signature}");
-
-                return isValid;
+                return expectedSignature == signature;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error validating signature: {ex.Message}");
+                _logger.LogError(ex, "Error validating signature");
                 return false;
             }
+        }
+
+        private string GetClientIp(HttpContext context)
+        {
+            if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor))
+            {
+                return forwardedFor.FirstOrDefault()?.Split(',')[0]?.Trim()
+                    ?? context.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown";
+            }
+
+            return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Reflection.PortableExecutable;
 
 namespace BLL.Integrations.Kafka
 {
@@ -19,18 +18,17 @@ namespace BLL.Integrations.Kafka
             var config = new ProducerConfig
             {
                 BootstrapServers = _settings.BootstrapServers,
-                Acks = Acks.All, // Гарантированная доставка
-                MessageSendMaxRetries = 3,
-                RetryBackoffMs = 1000,
-                EnableIdempotence = true // Идемпотентность
+                Acks = Acks.All,
+                MessageSendMaxRetries = 5,
+                RetryBackoffMs = 3000,
+                EnableIdempotence = true,
             };
 
             _producer = new ProducerBuilder<Null, string>(config)
                 .SetErrorHandler((_, error) =>
                 {
                     _logger.LogError($"Kafka Producer Error: {error.Reason}");
-                })
-                .Build();
+                }).Build();
         }
 
         public async Task<bool> ProduceAsync(string topic, string message, string? eventType = null)

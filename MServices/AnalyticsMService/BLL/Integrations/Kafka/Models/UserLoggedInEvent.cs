@@ -1,6 +1,6 @@
-﻿namespace BLL.Integrations.Kafka.Outbox.Events
+﻿namespace BLL.Integrations.Kafka.Models
 {
-    public record UserLoggedInEvent
+    internal record UserLoggedInEvent
     {
         public Guid UserId { get; init; }
         public DateTime LoggedInAt { get; init; }

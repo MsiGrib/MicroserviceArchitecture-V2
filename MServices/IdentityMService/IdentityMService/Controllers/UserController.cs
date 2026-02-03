@@ -1,5 +1,4 @@
 ﻿using BLL.Services.Interfaces.User;
-using IdentityMService.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,7 +37,6 @@ namespace IdentityMService.Controllers
             }
         }
 
-        [ApiKey]
         [HttpGet("small-info/{userId}")]
         public async Task<IActionResult> GetSmallInfo([FromRoute] Guid userId)
         {
@@ -58,7 +56,6 @@ namespace IdentityMService.Controllers
             }
         }
 
-        [ApiKey]
         [HttpPost("small-info/batch")]
         public async Task<IActionResult> GetBatchSmallInfo([FromBody] List<Guid> userIds)
         {

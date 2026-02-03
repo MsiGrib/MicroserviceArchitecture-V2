@@ -73,12 +73,30 @@ namespace IdentityMService.Controllers
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
-            var userId = GetUserIdFromClaims();
-            await _authService.LogoutAsync(request.RefreshToken, userId);
+            try
+            {
+                var userId = GetUserIdFromClaims();
 
-            return Ok();
+                var validUserId = await _authService.GetUserIdFromRefreshTokenAsync(request.RefreshToken);
+
+                if (validUserId == null || validUserId != userId)
+                {
+                    _logger.LogWarning("Invalid refresh token for logout. UserId from token: {UserId}, from refresh: {RefreshUserId}", userId, validUserId);
+                    return Ok(new { message = "Logged out successfully" });
+                }
+
+                await _authService.LogoutAsync(request.RefreshToken, userId);
+                return Ok(new { message = "Logged out successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout");
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("change-password")]

@@ -29,7 +29,6 @@ namespace BLL.Integrations.Kafka.Outbox
             };
 
             await _context.OutboxMessages.AddAsync(outboxMessage);
-            // Не вызываем SaveChangesAsync здесь - это сделает вызывающий код в рамках транзакции
         }
 
         public async Task ProcessPendingMessagesAsync()
@@ -37,7 +36,7 @@ namespace BLL.Integrations.Kafka.Outbox
             var pendingMessages = await _context.OutboxMessages
                 .Where(m => m.Status == "Pending" && m.RetryCount < 3)
                 .OrderBy(m => m.CreatedAt)
-                .Take(50) // Обрабатываем по 50 сообщений за раз
+                .Take(50)
                 .ToListAsync();
 
             foreach (var message in pendingMessages)
@@ -47,7 +46,6 @@ namespace BLL.Integrations.Kafka.Outbox
                     message.Status = "Processing";
                     await _context.SaveChangesAsync();
 
-                    // Отправляем в Kafka
                     var success = await _kafkaProducer.ProduceAsync(message.Topic, message.EventData, message.EventType);
 
                     if (success)

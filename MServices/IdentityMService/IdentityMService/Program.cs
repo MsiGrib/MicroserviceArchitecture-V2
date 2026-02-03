@@ -10,7 +10,6 @@ using DAL.Repositories;
 using DAL.Repositories.Interfaces;
 using DAL.Repositories.Interfaces.User;
 using DAL.Repositories.User;
-using IdentityMService.Attributes;
 using IdentityMService.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -136,8 +135,6 @@ namespace IdentityMService
 
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-            builder.Services.AddScoped<ApiKeyAttribute>();
-
             builder.Services.Configure<KafkaConfiguration>(builder.Configuration.GetSection("Kafka"));
             builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
             builder.Services.AddScoped<IOutboxService, OutboxService>();
@@ -164,7 +161,6 @@ namespace IdentityMService
 
             app.UseCors("AllowGateway");
 
-            app.UseMiddleware<ServiceIpWhitelistMiddleware>();
             app.UseMiddleware<GatewayAuthMiddleware>();
 
             app.UseHttpsRedirection();

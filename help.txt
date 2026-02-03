@@ -27,6 +27,11 @@ Username: admin
 Password: Admin123!
 "Postgres": "Host=localhost;Port=5433;Database=IdentityDB;Username=admin;Password=Admin123!;Pooling=true;"
 
+кафка
+топики
+identity.events
+analytics.events
+
 миграции
 Add-Migration InitialCreate -Context AppDbContext -OutputDir Migrations -Project DAL -StartupProject IdentityMService
 Update-Database -Context AppDbContext -Project DAL -StartupProject IdentityMService

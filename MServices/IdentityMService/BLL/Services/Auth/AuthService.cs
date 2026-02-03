@@ -28,13 +28,9 @@ namespace BLL.Services.Auth
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthService(
-            IUserRepository userRepository,
-            IPasswordHasher passwordHasher,
-            IDistributedCache redisCache,
-            IOptions<JwtSettings> jwtSettings,
-            ILogger<AuthService> logger,
-            IOutboxService outboxService,
-            IHttpContextAccessor httpContextAccessor)
+            IUserRepository userRepository, IPasswordHasher passwordHasher, IDistributedCache redisCache,
+            IOptions<JwtSettings> jwtSettings, ILogger<AuthService> logger,
+            IOutboxService outboxService, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
@@ -75,8 +71,8 @@ namespace BLL.Services.Auth
                 Email = user.Email,
                 Username = user.Username,
                 RegisteredAt = user.CreatedAt,
-                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
-                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString(),
+                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? string.Empty,
+                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString() ?? string.Empty,
                 TimeZone = TimeZoneInfo.Local.Id
             };
 
@@ -112,8 +108,8 @@ namespace BLL.Services.Auth
             {
                 UserId = user.Id,
                 LoggedInAt = user.LastLoginAt.Value,
-                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
-                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString(),
+                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? string.Empty,
+                UserAgent = httpContext?.Request?.Headers["User-Agent"].ToString() ?? string.Empty,
                 TimeZone = TimeZoneInfo.Local.Id,
                 LoginType = "Standard"
             };
@@ -172,27 +168,51 @@ namespace BLL.Services.Auth
         {
             var httpContext = _httpContextAccessor.HttpContext;
 
+            try
+            {
+                var tokenKey = $"refresh:{refreshToken}";
+                var storedUserId = await _redisCache.GetStringAsync(tokenKey);
+
+                if (!string.IsNullOrEmpty(storedUserId) && storedUserId == userId.ToString())
+                {
+                    await _redisCache.RemoveAsync(tokenKey);
+                    _logger.LogInformation("Refresh token revoked for user: {UserId}", userId);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid refresh token for user: {UserId}", userId);
+                }
+
+                var userLoggedOutEvent = new UserLoggedOutEvent
+                {
+                    UserId = userId,
+                    LoggedOutAt = DateTime.UtcNow,
+                    LogoutType = "Manual",
+                    Reason = "User initiated logout",
+                };
+
+                await _outboxService.AddEventAsync("UserLoggedOut", userLoggedOutEvent, "identity.events", userId);
+
+                await _userRepository.SaveChangesAsync();
+
+                _logger.LogInformation("User logged out successfully: {UserId}", userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout for user: {UserId}", userId);
+                throw;
+            }
+        }
+
+        public async Task<Guid?> GetUserIdFromRefreshTokenAsync(string refreshToken)
+        {
             var tokenKey = $"refresh:{refreshToken}";
             var storedUserId = await _redisCache.GetStringAsync(tokenKey);
 
-            if (!string.IsNullOrEmpty(storedUserId) && storedUserId == userId.ToString())
-            {
-                await _redisCache.RemoveAsync(tokenKey);
-                _logger.LogInformation("Token revoked for user: {UserId}", userId);
-            }
+            if (string.IsNullOrEmpty(storedUserId) || !Guid.TryParse(storedUserId, out var userId))
+                return null;
 
-            var userLoggedOutEvent = new UserLoggedOutEvent
-            {
-                UserId = userId,
-                LoggedOutAt = DateTime.UtcNow,
-                LogoutType = "Manual",
-                Reason = "User initiated logout"
-            };
-
-            await _outboxService.AddEventAsync("UserLoggedOut", userLoggedOutEvent, "identity.events", userId);
-            await _userRepository.SaveChangesAsync();
-
-            _logger.LogInformation("User logged out: {UserId}", userId);
+            return userId;
         }
 
         private async Task<AuthResponse> GenerateTokensAsync(DAL.Entities.User user)

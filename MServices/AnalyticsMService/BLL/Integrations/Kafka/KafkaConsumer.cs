@@ -15,9 +15,7 @@ namespace BLL.Integrations.Kafka
         private readonly IServiceProvider _serviceProvider;
         private readonly string[] _topics;
 
-        public KafkaConsumer(
-            IOptions<KafkaConfiguration> kafkaSettings,
-            ILogger<KafkaConsumer> logger,
+        public KafkaConsumer(IOptions<KafkaConfiguration> kafkaSettings, ILogger<KafkaConsumer> logger,
             IServiceProvider serviceProvider)
         {
             _settings = kafkaSettings.Value;
@@ -30,7 +28,7 @@ namespace BLL.Integrations.Kafka
                 BootstrapServers = _settings.BootstrapServers,
                 GroupId = _settings.ConsumerGroup,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = false, // Ручное подтверждение
+                EnableAutoCommit = false,
                 EnableAutoOffsetStore = false
             };
 
@@ -59,10 +57,8 @@ namespace BLL.Integrations.Kafka
 
                     _logger.LogInformation($"Received event: {eventType} from topic: {consumeResult.Topic}");
 
-                    // Обрабатываем сообщение
                     await ProcessMessageAsync(eventType, consumeResult.Message.Value, consumeResult.Topic);
 
-                    // Подтверждаем обработку
                     _consumer.StoreOffset(consumeResult);
                     _consumer.Commit(consumeResult);
                 }
@@ -119,7 +115,7 @@ namespace BLL.Integrations.Kafka
             }
         }
 
-        private IEventHandler GetEventHandler(string eventType, IServiceScope scope)
+        private IEventHandler? GetEventHandler(string eventType, IServiceScope scope)
         {
             return eventType switch
             {

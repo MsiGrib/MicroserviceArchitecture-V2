@@ -6,16 +6,18 @@ namespace ApiGateway.Services
     public class GatewayHeaderService : IGatewayHeaderService
     {
         private readonly IJwtService _jwtService;
+
         private static readonly Dictionary<string, string[]> PublicEndpoints = new()
         {
-            ["auth"] = new[] { "POST /login", "POST /register", "POST /refresh", },
+            ["auth"] = new[] { "POST /login", "POST /register", "POST /refresh" },
             ["post"] = new[] { "GET /" },
             ["comment"] = new[] { "GET /post/{postId}" },
         };
-        private static readonly List<string> IdentityServicePaths = new()
+        private static readonly List<string> IdentityProtectedEndpoints = new()
         {
-            "/api/auth",
-            "/api/user",
+            "/api/auth/logout",
+            "/api/auth/change-password",
+            "/api/user/me"
         };
 
         public GatewayHeaderService(IJwtService jwtService)
@@ -23,33 +25,89 @@ namespace ApiGateway.Services
             _jwtService = jwtService;
         }
 
-        public bool IsIdentityServiceEndpoint(HttpContext context)
-        {
-            var path = context.Request.Path.ToString();
-            return IdentityServicePaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-        }
-
         public async Task TransformRequestAsync(HttpContext context, HttpRequestMessage proxyRequest)
         {
-            var user = context.User;
+            var path = context.Request.Path.ToString();
+            var method = context.Request.Method;
+
 
             if (IsPublicEndpoint(context))
             {
-                HandlePublicAuthEndpoint(context, proxyRequest);
+                HandlePublicEndpoint(context, proxyRequest);
             }
-            else if (IsIdentityServiceEndpoint(context))
+            else if (IsIdentityProtectedEndpoint(path, method))
             {
-                HandleIdentityServiceEndpoint(context, proxyRequest);
+                await HandleIdentityProtectedEndpoint(context, proxyRequest);
+            }
+            else if (path.StartsWith("/api/auth/", StringComparison.OrdinalIgnoreCase) ||
+                     path.StartsWith("/api/user/", StringComparison.OrdinalIgnoreCase))
+            {
+                await HandleIdentityEndpoint(context, proxyRequest);
             }
             else
             {
-                await HandleContentServiceEndpoint(context, proxyRequest);
+                await HandleContentEndpoint(context, proxyRequest);
             }
-
-            await Task.CompletedTask;
         }
 
-        private async Task HandleContentServiceEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
+        private bool IsIdentityProtectedEndpoint(string path, string method)
+        {
+            var endpoint = $"{method} {path}";
+            return IdentityProtectedEndpoints.Any(p => endpoint.Contains(p, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task HandleIdentityProtectedEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
+        {
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            {
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+
+                var isValid = await _jwtService.ValidateTokenAsync(token);
+
+                if (isValid)
+                {
+                    var claimsPrincipal = await _jwtService.GetPrincipalFromTokenAsync(token);
+                    if (claimsPrincipal != null)
+                    {
+                        await AddGatewayHeadersAsync(claimsPrincipal, proxyRequest);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                proxyRequest.Headers.TryAddWithoutValidation("Authorization", authHeader);
+            }
+        }
+
+        private async Task HandleIdentityEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
+        {
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                proxyRequest.Headers.TryAddWithoutValidation("Authorization", authHeader);
+
+                if (authHeader.StartsWith("Bearer "))
+                {
+                    var token = authHeader.Substring("Bearer ".Length).Trim();
+                    var isValid = await _jwtService.ValidateTokenAsync(token);
+
+                    if (isValid)
+                    {
+                        var claimsPrincipal = await _jwtService.GetPrincipalFromTokenAsync(token);
+                        if (claimsPrincipal != null)
+                        {
+                            await AddGatewayHeadersAsync(claimsPrincipal, proxyRequest);
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task HandleContentEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
         {
             proxyRequest.Headers.Remove("Authorization");
 
@@ -64,26 +122,19 @@ namespace ApiGateway.Services
                 {
                     var claimsPrincipal = await _jwtService.GetPrincipalFromTokenAsync(token);
                     if (claimsPrincipal != null)
-                        await AddUserHeadersAsync(claimsPrincipal, proxyRequest);
+                        await AddGatewayHeadersAsync(claimsPrincipal, proxyRequest);
                 }
             }
         }
 
-        private void HandlePublicAuthEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
+        private void HandlePublicEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
         {
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
             if (!string.IsNullOrEmpty(authHeader))
                 proxyRequest.Headers.TryAddWithoutValidation("Authorization", authHeader);
         }
 
-        private void HandleIdentityServiceEndpoint(HttpContext context, HttpRequestMessage proxyRequest)
-        {
-            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-            if (!string.IsNullOrEmpty(authHeader))
-                proxyRequest.Headers.TryAddWithoutValidation("Authorization", authHeader);
-        }
-
-        private async Task AddUserHeadersAsync(ClaimsPrincipal user, HttpRequestMessage proxyRequest)
+        private async Task AddGatewayHeadersAsync(ClaimsPrincipal user, HttpRequestMessage proxyRequest)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;

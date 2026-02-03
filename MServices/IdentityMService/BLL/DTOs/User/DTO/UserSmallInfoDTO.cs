@@ -2,8 +2,8 @@
 {
     public record UserSmallInfoDTO
     {
-        public Guid Id { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string Username { get; set; } = string.Empty;
+        public Guid Id { get; init; }
+        public string Email { get; init; } = string.Empty;
+        public string Username { get; init; } = string.Empty;
     }
 }
